@@ -4,7 +4,7 @@ CS121 Grutoring Calender
 ## Dependencies
 1. npm install: will get almost all node modules
 
-### additional dependencies:
+### Additional Dependencies:
 
 1. ajv
 2. moment
