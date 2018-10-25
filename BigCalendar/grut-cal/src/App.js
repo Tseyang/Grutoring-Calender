@@ -53,13 +53,21 @@ class App extends Component {
   render() {
     return (
         <div>
-            <div>
-                {this.state.user ?
-                    <button onClick={this.logout}>Log Out</button>
-                    :
-                    <button onClick={this.login}>Log In</button>
-                }
-            </div>
+            {this.state.current_user ?
+                <div className="navbar">
+                    <div className="navbar__inner">
+                        <button href="index.html" onClick={this.logout}>Log Out</button>
+                        You are logged in as {this.state.current_user.displayName}
+                    </div>
+                </div>
+                :
+                <div className="navbar">
+                    <div className="navbar__inner">
+                        <button href="index.html" onClick={this.login}>Log In</button>
+                        You are not logged in.
+                    </div>
+                </div>
+            }
             <div>
                 <Row vertical='center'>
                   <Column flexGrow={1} horizontal='center'>
