@@ -25,7 +25,7 @@ class ClassPopUp extends Component {
     handleSubmit(event){
         event.preventDefault();
         const data = new FormData(event.target);
-        
+
         // access FormData fields with 'data.get(fieldName)'
         var course = data.get("course");
         this.props.addCourse(course);
@@ -112,9 +112,11 @@ class App extends Component {
                       <label><Checkbox value="CS60"/> CS60</label>
 
                     </CheckboxGroup>
-                    <button onClick={this.togglePopup}>Add a class</button>
-                    <p>The class was: <span id="JSON-course-name"></span> <span id = "JSON-course-code"></span> </p>
                   </Column>
+                  <div>
+                      <button onClick={this.togglePopup}>Add a class</button>
+                      <p>The class was: <span id="JSON-course-name"></span> <span id = "JSON-course-code"></span> </p>
+                  </div>
                   <Column flexGrow={1} horizontal='center'>
                       <BigCalendar
                       localizer={localizer}
