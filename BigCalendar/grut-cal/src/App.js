@@ -7,45 +7,12 @@ import {Checkbox, CheckboxGroup} from 'react-checkbox-group';
 import firebase,  { auth, provider } from "./firebase.js";
 
 import Navbar from './Navbar.js';
-import CourseMenu from './CourseMenu';
+import ClassPopUp from './AddClassPopUp';
 
 import './css/App.css';
 import './css/react-big-calendar.css';
 
 const localizer = BigCalendar.momentLocalizer(moment)
-
-class ClassPopUp extends Component {
-    constructor(props){
-        super(props);
-        //expect functions addCourse (callback for form contents) and closePopup
-        console.log(props);
-        this.handleSubmit = this.handleSubmit.bind(this);
-    }
-
-    handleSubmit(event){
-        event.preventDefault();
-        const data = new FormData(event.target);
-
-        // access FormData fields with 'data.get(fieldName)'
-        var course = data.get("course");
-        this.props.addCourse(course);
-        this.props.closePopup();
-    }
-
-    render(){
-        return(
-            <div className="class-popup">
-                <div className="class-popup-inner">
-                    <form onSubmit={this.handleSubmit}>
-                        <CourseMenu />
-                        <input type = "submit" />
-                    </form>
-                    <button onClick={this.props.closePopup}>Back</button>
-                </div>
-            </div>
-        )
-    }
-}
 
 class App extends Component {
   constructor(props) {
@@ -54,6 +21,7 @@ class App extends Component {
         current_user: null,
         classes: ['CS81','CS70', 'CS121', 'CS105', 'CS60'],
         showPopup: false,
+        courses: []
     };
     this.togglePopup = this.togglePopup.bind(this);
     this.addCourse = this.addCourse.bind(this);
@@ -61,12 +29,9 @@ class App extends Component {
 
   // callback function for adding a course using overlay
   addCourse(course){
-    var json = {
-        courseCode: course.substr(0, course.indexOf(' ')),
-        courseName: course.substr(course.indexOf(' ')+1)
-    }
-    document.getElementById("JSON-course-name").textContent = json.courseName;
-    document.getElementById("JSON-course-code").textContent = "(" + json.courseCode + ")";
+    console.log(course);
+    var json = course;
+    document.getElementById("course-info").textContent = JSON.stringify(json, undefined, 2);
   }
 
   componentDidMount(){
@@ -77,6 +42,16 @@ class App extends Component {
           });
       }
     });
+    // Using HyperSchedule backend to load API
+    URL = "https://hyperschedule.herokuapp.com/api/v2/all-courses"
+    fetch(URL).then(results => {
+        return results.json();
+    }).then(data => {
+        var HMcourses = data["courses"].filter(function(course) {return course["school"] === "HM";});
+        this.setState({
+            courses: HMcourses
+        })
+    })
   }
 
   togglePopup(){
@@ -112,10 +87,10 @@ class App extends Component {
                       <label><Checkbox value="CS60"/> CS60</label>
 
                     </CheckboxGroup>
+                    <pre id="course-info"></pre>
                   </Column>
                   <div>
                       <button onClick={this.togglePopup}>Add a class</button>
-                      <p>The class was: <span id="JSON-course-name"></span> <span id = "JSON-course-code"></span> </p>
                   </div>
                   <Column flexGrow={1} horizontal='center'>
                       <BigCalendar
@@ -129,6 +104,7 @@ class App extends Component {
             </div>
             {this.state.showPopup ?
                 <ClassPopUp
+                    courses = {this.state.courses}
                     closePopup = {this.togglePopup}
                     addCourse = {(course) => {this.addCourse(course)}}/>
                 :

@@ -1,30 +1,17 @@
 import React from 'react';
 
 class CourseMenu extends React.Component{
-    constructor(){
-        super();
+    constructor(props){
+        super(props);
         this.state = {
-            courses: []
+            courses: this.props.courses
         };
-    }
-
-    componentDidMount(){
-        // Using HyperSchedule backend to load API
-        URL = "https://hyperschedule.herokuapp.com/api/v2/all-courses"
-        fetch(URL).then(results => {
-            return results.json();
-        }).then(data => {
-            var HMcourses = data["courses"].filter(function(course) {return course["school"] === "HM";});
-            this.setState({
-                courses: HMcourses
-            })
-        })
     }
 
     render(){
         return(
             <div>
-                <input list="courses" name="course"/>
+                <input list="courses" name="course" required/>
                 <datalist id="courses">
                     {
                         this.state.courses.map((course) => {
