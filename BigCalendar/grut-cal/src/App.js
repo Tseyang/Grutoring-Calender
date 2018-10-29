@@ -25,6 +25,7 @@ class App extends Component {
     };
     this.togglePopup = this.togglePopup.bind(this);
     this.addCourse = this.addCourse.bind(this);
+    this.logout = this.logout.bind(this);
   }
 
   // callback function for adding a course using overlay
@@ -57,6 +58,15 @@ class App extends Component {
     }
   }
 
+  //logout function to be passed to navbar component
+  logout(){
+      auth.signOut().then(() => {
+          this.setState({
+              current_user: null
+          });
+      });
+  }
+
   componentDidMount(){
     auth.onAuthStateChanged((user) => {
       if(user){
@@ -87,7 +97,9 @@ class App extends Component {
     return (
         <div>
             <Row>
-                <Navbar/>
+                <Navbar
+                    logout={this.logout}
+                    />
             </Row>
             <div className="body">
                 <Row vertical='center'>
@@ -112,9 +124,15 @@ class App extends Component {
                     </CheckboxGroup>
                     <pre id="course-info"></pre>
                   </Column>
+                  {this.state.current_user ?
                   <div>
                       <button onClick={this.togglePopup}>Add a class</button>
                   </div>
+                  :
+                  <div>
+                      <p>You need to login to add classes.</p>
+                  </div>
+                  }
                   <Column flexGrow={1} horizontal='center'>
                       <BigCalendar
                       localizer={localizer}

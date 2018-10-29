@@ -25,10 +25,9 @@ class Navbar extends Component{
     }
 
     logout(){
-        auth.signOut().then(() => {
-            this.setState({
-                current_user: null
-            });
+        this.props.logout();
+        this.setState({
+            current_user: null
         });
     }
 
