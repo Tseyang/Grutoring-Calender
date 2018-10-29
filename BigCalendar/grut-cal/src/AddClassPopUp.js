@@ -59,7 +59,7 @@ class ClassPopUp extends Component {
             }
         }
         newState["course"] = data.get("course");
-        newState["grutor"] = data.get("role");
+        newState["role"] = data.get("role");
         this.setState({formValues: newState}, function() {
             this.props.addCourse(this.state.formValues);
             this.props.closePopup();

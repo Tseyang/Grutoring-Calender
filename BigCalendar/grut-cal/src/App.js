@@ -32,6 +32,29 @@ class App extends Component {
     console.log(course);
     var json = course;
     document.getElementById("course-info").textContent = JSON.stringify(json, undefined, 2);
+
+    //json as this.state
+    const usersRef = firebase.database().ref("users");
+    const currentUser = this.state.current_user;
+
+    if(json["role"] === "grutor"){
+        // grutor logic
+        var course = {};
+        course[json["course"].substr(0, json["course"].indexOf(" "))] = {
+                location: json["location"],
+                startTime: json["startTime"],
+                endTime: json["endTime"],
+                startDate: json["date"]
+            }
+        // console.log(this.state.current_user);
+        usersRef.child(currentUser.displayName).child("grutorClasses").set(course);
+    } else {
+        // add to classes child in Firebase
+        var course = {
+            title: json["course"]
+        }
+        usersRef.child(currentUser.displayName).child("classes").set(course);
+    }
   }
 
   componentDidMount(){
