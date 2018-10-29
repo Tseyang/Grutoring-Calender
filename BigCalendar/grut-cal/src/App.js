@@ -8,13 +8,6 @@ import {Checkbox, CheckboxGroup} from 'react-checkbox-group';
 
 const localizer = BigCalendar.momentLocalizer(moment)
 
-const classes = [
-  {value: "CS121"},
-  {value: "CS105"},
-  {value: "CS70"},
-  {value: "CS81"}
-]
-
 {/*function mapListItems(classes){
   var classBoxes = classes.map((classTemp) => {
   return (
