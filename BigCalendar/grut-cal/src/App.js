@@ -1,112 +1,115 @@
 import React, { Component } from 'react';
 import BigCalendar from 'react-big-calendar';
 import moment from 'moment';
-import './react-big-calendar.css';
-import './class-panel.css'; 
 import { Column, Row } from 'simple-flexbox';
 import {Checkbox, CheckboxGroup} from 'react-checkbox-group';
 
+import firebase,  { auth, provider } from "./firebase.js";
+
+import Navbar from './Navbar.js';
+import ClassPopUp from './AddClassPopUp';
+
+import './css/App.css';
+import './css/react-big-calendar.css';
+
 const localizer = BigCalendar.momentLocalizer(moment)
 
-const classes = [
-  {value: "CS121"},
-  {value: "CS105"},
-  {value: "CS70"},
-  {value: "CS81"}
-]
-
-{/*function mapListItems(classes){
-  var classBoxes = classes.map((classTemp) => {
-  return (
-    <label>{classTemp.value}, {classTemp.id}<input type="checkbox" key={classTemp.id} value=
-    {classTemp.value} checked ={classTemp.isChecked} onChange = {this.toggleClass}/> <br></br></label>)});
-  return classBoxes};*/}
-
-function classList(classes){
-  var checkClasses = classes.map((classTemp) => {
-    if (classTemp.isChecked === true){
-      return <li>{classTemp.value}<br></br></li>}
-    }
-  );
-  return checkClasses};
-
 class App extends Component {
-
   constructor(props) {
     super(props);
     this.state = {
-      classes: [
-        {id: 1, value: "CS121", isChecked: true},
-        {id: 2, value: "CS105", isChecked: false},
-        {id: 3, value: "CS70", isChecked: true},
-        {id: 4, value: "CS81", isChecked: false}
-      ],
-      textInput: ''
+        current_user: null,
+        classes: ['CS81','CS70', 'CS121', 'CS105', 'CS60'],
+        showPopup: false,
+        courses: []
     };
-
-    this.handleChange = this.handleChange.bind(this);
+    this.togglePopup = this.togglePopup.bind(this);
+    this.addCourse = this.addCourse.bind(this);
   }
 
-  mapListItems(classes){
-    var classBoxes = classes.map((classTemp) => {
-    return (
-      <label>{classTemp.value}, {classTemp.id}<input type="checkbox" key={classTemp.id} value=
-      {classTemp.value} checked ={classTemp.isChecked} id = {classTemp.id} onChange = {this.toggleClass.bind(this)}/> <br></br></label>)});
-    return classBoxes};
-
-  handleChange(event) {
-    const target = event.target
-    const name = target.name
-
-    this.setState({[name]: event.target.value});
+  // callback function for adding a course using overlay
+  addCourse(course){
+    console.log(course);
+    var json = course;
+    document.getElementById("course-info").textContent = JSON.stringify(json, undefined, 2);
   }
 
-  toggleClass(event) {
-    const value = event.target.id;
-    const index = value-1;
-    this.state.classes[index].isChecked = !(this.state.classes[index].isChecked);
-    this.setState({classes: this.state.classes})
+  componentDidMount(){
+    auth.onAuthStateChanged((user) => {
+      if(user){
+          this.setState({
+              current_user: user,
+          });
+      }
+    });
+    // Using HyperSchedule backend to load API
+    URL = "https://hyperschedule.herokuapp.com/api/v2/all-courses"
+    fetch(URL).then(results => {
+        return results.json();
+    }).then(data => {
+        var HMcourses = data["courses"].filter(function(course) {return course["school"] === "HM";});
+        this.setState({
+            courses: HMcourses
+        })
+    })
   }
-  addClass(event) {
-    event.preventDefault();
-    this.state.classes.push(
-      {id: this.state.classes.length+1, value: this.state.textInput, isChecked: false }
-    )
-    this.setState({classes: this.state.classes})
+
+  togglePopup(){
+    this.setState({
+        showPopup: !this.state.showPopup
+    });
   }
 
   render() {
     return (
-      <div className = "wholeThing">
-        <div className = "userInput">
-          <text>Class List</text>
-            
-            <form>
-              { this.mapListItems(this.state.classes) } 
-            </form>
-            <form>
-            <label>
-                Name:
-                <input 
-                  name="textInput"
-                  type="text" 
-                  value = {this.state.textInput} 
-                  onChange={this.handleChange} />
-              </label>
-              <button name="textInput" type="submit" value="Here"  onClick={this.addClass.bind(this)}>
-                Submit Class
-              </button>
-            </form>
-            { classList(this.state.classes) }
-          </div>
-          <div className = "calendar">
-                <BigCalendar
-                localizer={localizer}
-                events={[]}
-                startAccessor="startDate"
-                endAccessor="endDate"
-              />
-          </div> 
+        <div>
+            <Row>
+                <Navbar/>
+            </Row>
+            <div className="body">
+                <Row vertical='center'>
+                  <Column flexGrow={1} horizontal='center'>
+                    <h1>Class List</h1>
+                    <CheckboxGroup
+                      checkboxDepth={2} // This is needed to optimize the checkbox group
+                      name="classes"
+                      value={this.state.classes}
+                      onChange={this.classesChanged}>
+
+                      <label><Checkbox value="CS81"/> CS81</label>
+                      <br></br>
+                      <label><Checkbox value="CS70"/> CS70</label>
+                      <br></br>
+                      <label><Checkbox value="CS121"/> CS121</label>
+                      <br></br>
+                      <label><Checkbox value="CS105"/> CS105</label>
+                      <br></br>
+                      <label><Checkbox value="CS60"/> CS60</label>
+
+                    </CheckboxGroup>
+                    <pre id="course-info"></pre>
+                  </Column>
+                  <div>
+                      <button onClick={this.togglePopup}>Add a class</button>
+                  </div>
+                  <Column flexGrow={1} horizontal='center'>
+                      <BigCalendar
+                      localizer={localizer}
+                      events={[]}
+                      startAccessor="startDate"
+                      endAccessor="endDate"
+                    />
+                  </Column>
+                </Row>
+            </div>
+            {this.state.showPopup ?
+                <ClassPopUp
+                    courses = {this.state.courses}
+                    closePopup = {this.togglePopup}
+                    addCourse = {(course) => {this.addCourse(course)}}/>
+                :
+                null
+            }
         </div>
   );
 }
