@@ -8,8 +8,7 @@ CS121 Grutoring Calender
 
 1. ajv
 2. moment
-3. react-checkbox-group
-4. simple-flexbox
-5. react-big-calendar
-6. react-tackle-box
-7. firebase
+3. simple-flexbox
+4. react-big-calendar
+5. react-tackle-box
+6. firebase
