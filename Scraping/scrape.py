@@ -13,7 +13,7 @@ import re
 from bs4 import BeautifulSoup
 
 # Globals/Parameters
-current_term = "FA"
+current_term = "FA" #needs to be updated every semester
 portal_URL = ("https://portal.hmc.edu/ICS/Portal_Homepage.jnz?"
 	   "portlet=Course_Schedules&screen=Advanced+Course+Search"
 	   "&screenType=next")
@@ -57,6 +57,8 @@ def get_portal_html(browser):
 	if not terms:
 		raise ScrapeError("couldn't parse any term names (from: {})".format(repr(term_names)))
 
+	# handle preregistration semester
+	terms = filter(lambda x: x[1], terms)
 	most_recent_term = max(terms)
 
 	# actually select the term in the dropdown
@@ -119,8 +121,8 @@ def parse_portal_html(html):
 			"course_name": name.text,
 			"faculty": sorted(set(re.split(r"\s*\n\s*",faculty.text.strip()))),
 			"schedule": [stime.text for stime in schedule.find_all("li")],
-			"begin_date": begin.text,
-			"end_date": end.text
+			"startDate": begin.text,
+			"endDate": end.text
         })
 
 	return {"courses": raw_courses}
@@ -129,5 +131,6 @@ if __name__ == "__main__":
 	browser = get_browser(True)
 	HM_course_html = get_portal_html(browser)
 	raw_courses = parse_portal_html(HM_course_html)
+	# TODO: change file to be saved as .js with appropriate declarations on top of JSON object
 	with open("courses.json", "w") as f:
 		json.dump(raw_courses, f)
