@@ -1,0 +1,36 @@
+/* Navbar CSS is adapted from Evie template: https://demos.onepagelove.com/html/evie/ */
+
+.navbar {
+    position: fixed;
+    z-index: 100;
+    width: 100%;
+    background-color: #6C63FF;
+    transition: 0.7s;
+}
+
+.navbar--extended {
+  background-color: transparent; }
+  .navbar--extended .navbar__inner {
+    height: 60px;
+    color: #ffffff; }
+
+.navbar--nofixed {
+  position: relative;
+  z-index: 3; }
+
+.navbar__inner {
+  -js-display: flex;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  color: #fff;
+  transition: 0.7s;
+  margin: auto 12px auto 12px;
+}
+
+.navbar__logo {
+  font-size: 1.325rem;
+  transition: 0;
+  color: #fff;
+  text-decoration: none; }
