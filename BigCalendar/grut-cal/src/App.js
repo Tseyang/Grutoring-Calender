@@ -9,6 +9,8 @@ import firebase,  { auth, provider } from "./firebase.js";
 import Navbar from './Navbar.js';
 import ClassPopUp from './AddClassPopUp';
 
+import ScrapedCourses from "./courses.js";
+
 import './css/App.css';
 import './css/react-big-calendar.css';
 
@@ -23,6 +25,12 @@ class App extends Component {
         showPopup: false,
         courses: []
     };
+    // logic for using offline json document for course listings
+    var HMcourses = ScrapedCourses["courses"];
+    for(let course in HMcourses){
+        var curr_course = HMcourses[course];
+        this.state.courses.push(curr_course);
+    }
     this.togglePopup = this.togglePopup.bind(this);
     this.addCourse = this.addCourse.bind(this);
     this.logout = this.logout.bind(this);
@@ -75,7 +83,9 @@ class App extends Component {
           });
       }
     });
-    // Using HyperSchedule backend to load API
+
+    // Using HyperSchedule backend to load API (this doesn't work when hyperscheduler updates for next semester's courses)
+    /*
     URL = "https://hyperschedule.herokuapp.com/api/v2/all-courses"
     fetch(URL).then(results => {
         return results.json();
@@ -85,6 +95,7 @@ class App extends Component {
             courses: HMcourses
         })
     })
+    */
   }
 
   togglePopup(){

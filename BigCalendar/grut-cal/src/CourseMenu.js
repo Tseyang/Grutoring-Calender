@@ -6,6 +6,7 @@ class CourseMenu extends React.Component{
         this.state = {
             courses: this.props.courses
         };
+        console.log(this.state.courses)
     }
 
     render(){
@@ -15,8 +16,9 @@ class CourseMenu extends React.Component{
                 <datalist id="courses">
                     {
                         this.state.courses.map((course) => {
-                            var course_code = course["department"] + "-" +  String(course["courseNumber"]).padStart(3, "0") + course["courseCodeSuffix"] + "-" + course["school"] + "-" + course["section"] + " " + course["courseName"];
-                            return (<option key={course_code} value={course_code}>{course_code}</option>);
+                            var course_code = course["course_code"] + "-" +  course["course_name"];
+                            // TODO: Add filtering of multiple sections of a class
+                            return (<option key={course_code} value={course_code}></option>);
                         })
                     }
                 </datalist>
