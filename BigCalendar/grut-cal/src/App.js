@@ -6,7 +6,7 @@ import {Checkbox, CheckboxGroup} from 'react-checkbox-group';
 
 import firebase,  { auth, provider } from "./firebase.js";
 
-import Navbar from './Navbar.js';
+import Navbar from './navbar.js';
 import ClassPopUp from './AddClassPopUp';
 
 import ScrapedCourses from "./courses.js";
