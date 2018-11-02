@@ -42,7 +42,7 @@ class App extends Component {
 	    document.getElementById("course-info").textContent = JSON.stringify(json, undefined, 2);
 
 	    //json as this.state
-	    const usersRef = firebase.database().ref("users");
+	    const usersRef = firebase.database().ref("Users");
 	    const currentUser = this.state.current_user;
 
 		if(json["role"] === "grutor"){
