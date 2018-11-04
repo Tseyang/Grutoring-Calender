@@ -14,6 +14,7 @@ import ScrapedCourses from "./courses.js";
 import './css/App.css';
 import './css/react-big-calendar.css';
 
+//necessary to make sure dates work
 const localizer = BigCalendar.momentLocalizer(moment)
 
 class App extends Component {
