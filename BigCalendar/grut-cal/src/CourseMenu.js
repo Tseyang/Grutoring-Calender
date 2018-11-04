@@ -6,7 +6,6 @@ class CourseMenu extends React.Component{
         this.state = {
             courses: this.props.courses
         };
-        console.log(this.state.courses)
     }
 
     render(){

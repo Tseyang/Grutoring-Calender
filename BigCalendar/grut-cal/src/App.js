@@ -36,31 +36,86 @@ class App extends Component {
 		this.logout = this.logout.bind(this);
 	}
 
-  	// callback function for adding a course using overlay
-  	addCourse(course){
-	    var json = course;
-	    document.getElementById("course-info").textContent = JSON.stringify(json, undefined, 2);
-
-	    //json as this.state
-	    const usersRef = firebase.database().ref("users");
-	    const currentUser = this.state.current_user;
-
-		if(json["role"] === "grutor"){
+	constructFirebaseEntry(json, grutor){
+		// function to construct Firebase course entry
+		var name = json["course"].substr(0, json["course"].indexOf(" "));
+		if(grutor){
 			// grutor logic
 			var course = {};
-			course[json["course"].substr(0, json["course"].indexOf(" "))] = {
+			course[name] = {
 					location: json["location"],
 					startTime: json["startTime"],
 					endTime: json["endTime"],
 					startDate: json["date"]
 			}
-			// console.log(this.state.current_user);
-			usersRef.child(currentUser.displayName).child("grutorClasses").set(course);
 		} else {
 			// add to classes child in Firebase
-			var course = json["course"].substr(0, json["course"].indexOf(" "));
-			usersRef.child(currentUser.displayName).child("classes").set(course);
+			var course = {};
+			course[name] = true; //can be replaced with actual data if we want it
 		}
+		return course
+	}
+
+	addToUsers(name, course_entry, grutor, currentUser){
+		//add course to Users DB in Firebase
+		const usersRef = firebase.database().ref("Users");
+		usersRef.once("value").then(function(snapshot){
+			if(grutor){
+				var grutorClasses = usersRef.child(currentUser).child("grutorClasses");
+				if(!(snapshot.hasChild(currentUser) && snapshot.child(currentUser).hasChild("grutorClasses"))){
+					// no user or no grutoring classes for this user yet
+					grutorClasses.set(course_entry);
+				}else{
+					// update
+					grutorClasses.child(name).set(course_entry[name]);
+				}
+			}else{
+				var classes = usersRef.child(currentUser).child("classes");
+				if(!(snapshot.hasChild(currentUser) && snapshot.child(currentUser).hasChild("classes"))){
+					// no user or classes for this user yet
+					classes.set(course_entry);
+				}else{
+					// update
+					classes.child(name).set(course_entry[name]);
+				}
+			}
+		})
+	}
+
+	addToClasses(code, course_name, grutor, currentUser){
+		// adds course/grutor to Classes DB in Firebase
+		const classesRef = firebase.database().ref("Classes");
+		classesRef.once("value").then(function(snapshot){
+			// add course entry if its not there
+			if(!snapshot.hasChild(code)){
+				var course = {}
+				course[code] = course_name
+				classesRef.child(code).set(course)
+			}
+			// add new grutor if not already present
+			if(grutor && !(snapshot.child(code).hasChild("grutors") && snapshot.child(code).child(grutors).hasChild(currentUser))){
+				var grutors = classesRef.child(code).child("grutors")
+				var data = {}
+				data[currentUser] = true; //can be replaced with actual data if we want it
+				grutors.child(currentUser).set(data[currentUser]);
+			}
+		})
+	}
+
+  	addCourse(course){
+		// callback function for adding a course using overlay
+	    var json = course;
+	    document.getElementById("course-info").textContent = JSON.stringify(json, undefined, 2);
+
+	    //json
+	    const currentUser = this.state.current_user.displayName;
+		const grutor = json["role"] === "grutor";
+		const course_name = json["course"].substr(json["course"].lastIndexOf("-")+1).trim()
+		var course_entry = this.constructFirebaseEntry(json, grutor);
+		var name = Object.keys(course_entry)[0];
+
+		this.addToUsers(name, course_entry, grutor, currentUser);
+		this.addToClasses(name, course_name, grutor, currentUser);
   	}
 
   	//logout function to be passed to navbar component
