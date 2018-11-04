@@ -60,8 +60,6 @@ class App extends Component {
 		this.setCourses = this.setCourses.bind(this);
 		this.removeCourse = this.removeCourse.bind(this);
 		this.getGrutoringInfo = this.getGrutoringInfo.bind(this);
-		this.displayData = this.displayData.bind(this);
-		this.mapGruteeEvents = this.mapGruteeEvents.bind(this);
 		this.mapEvents = this.mapEvents.bind(this);
 		this.getChecked = this.getChecked.bind(this);
 	}
@@ -250,13 +248,14 @@ class App extends Component {
 				grutorInfo = [];
 			}
 			// set state whenever snapshot changes
-			});
+			
 			this.parseGruteeEventsList(grutorInfo);
 			this.setState({
 				classInfo: grutorInfo
 			} )
+		})
 	}
-}
+
 
 	// Helper function that parses grutorClasses obtained from Firebase into events
 	// list to be displayed on calendar
@@ -423,7 +422,7 @@ class App extends Component {
 			// get snapshot of user's entry in Firebase
 			userRef.on('value', (snapshot) => {
 				var enrolledClasses = [];
-				var grutoringClasses = [];
+				var grutorClasses = [];
 				if(snapshot.exists()){
 					// get classes for this user
 					if(snapshot.hasChild("classes")){
@@ -438,7 +437,7 @@ class App extends Component {
 						for(let grutorClass in data){
 							var obj = {};
 							obj[grutorClass] = data[grutorClass];
-							grutoringClasses.push(obj);
+							grutorClasses.push(obj);
 						}
 					}
 				}
@@ -529,7 +528,7 @@ class App extends Component {
 	            	<div className = "classSidebar" >
 						<h1>Class List</h1>
 						<form>
-						{this.state.classes ?
+						{this.state.current_user ?
 							this.mapEvents(this.state.classes)
 							:
 							null
@@ -537,7 +536,11 @@ class App extends Component {
 						</form>
 						<h1>Grutoring List</h1>
 						<form>
-						{ this.mapEvents(this.state.grutorClasses) }
+						{this.state.current_user ?
+							this.mapEvents(this.state.grutorClasses)
+							:
+							null
+						}
 						</form>
 
 						{this.state.current_user ?
