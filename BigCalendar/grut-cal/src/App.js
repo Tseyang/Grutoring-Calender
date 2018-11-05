@@ -128,11 +128,14 @@ class App extends Component {
 		const classesRef = firebase.database().ref("Classes");
 		var grutorInfo = [];
 		var usersSnapshot;
+		// capture users Table
 		usersRef.on("value", (snapshot) => {
 			usersSnapshot = snapshot;
 		})
+		// use Classes table and look at grutors for each class
 		classesRef.on("value", (snapshot) => {
 			classes.forEach(function(classCode){
+				// get grutors for this class
 				var grutors = snapshot.child(classCode).child("grutors");
 				if(grutors.exists()){
 					grutors.forEach(function(grutorName){
@@ -159,17 +162,20 @@ class App extends Component {
 	setCourses(){
 		const currentUser = this.state.current_user.displayName;
 		const userRef = firebase.database().ref("Users"+"/"+currentUser);
+		// get snapshot of user's entry in Firebase
 		userRef.on('value', (snapshot) => {
 			if(snapshot.exists()){
 				var enrolledClasses = [];
 				var grutorClasses = [];
 				var classInfo = [];
+				// get classes for this user
 				if(snapshot.hasChild("classes")){
 					snapshot.child("classes").forEach(function(child){
 						enrolledClasses.push(child.key)
 					});
 					this.getGrutoringInfo(enrolledClasses);
 				}
+				// get classes this user is grutoring for
 				if(snapshot.hasChild("grutorClasses")){
 					var data = snapshot.child("grutorClasses").val();
 					for(let grutorClass in data){
@@ -182,6 +188,7 @@ class App extends Component {
 					classes: enrolledClasses,
 					grutorClasses: grutorClasses
 				}, function(){
+					// informative representation of data on webpage, can be deleted when not needed anymore
 					document.getElementById("firebase-classes").textContent = "Classes: " + this.state.classes;
 					document.getElementById("firebase-grutorClasses").textContent = "grutorClasses: " + JSON.stringify(this.state.grutorClasses, undefined, 2);
 				})
@@ -198,6 +205,7 @@ class App extends Component {
       	});
   	}
 
+	// runs whenever component mounts
   	componentDidMount(){
     	auth.onAuthStateChanged((user) => {
       	if(user){
@@ -208,12 +216,14 @@ class App extends Component {
     	});
   	}
 
+	// toggles the display of the add course overlay
   	togglePopup(){
     	this.setState({
         	showPopup: !this.state.showPopup
     	});
   	}
 
+	// function for removing course from Firebase
 	removeClass(courseCode){
 		// TODO: Implement functionality for removing class from Firebase on button click
 		alert("Remove class functionality yet to be implemented");
@@ -308,15 +318,6 @@ class App extends Component {
 	        </div>
 	  	);
 	}
-
-	// classesChanged = (newClasses) => {
-	//   	this.setState({
-	//     	classes: newClasses
-	//   	});
-	// }
-	// classesChanged = (newClasses) => {
-	// 	console.log(newClasses);
-	// }
 };
 
 export default App
