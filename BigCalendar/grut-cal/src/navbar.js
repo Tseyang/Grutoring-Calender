@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './css/navbar.css'
 
-import firebase,  { auth, provider } from "./firebase.js"
+import { auth, provider } from "./firebase.js"
 
 class Navbar extends Component{
 
