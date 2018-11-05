@@ -15,6 +15,7 @@ import './css/App.css';
 import './css/react-big-calendar.css';
 
 const localizer = BigCalendar.momentLocalizer(moment)
+// TODO: Move Firebase refs out of functions where possible to global
 
 class App extends Component {
 	constructor(props) {
@@ -22,6 +23,7 @@ class App extends Component {
 		this.state = {
 		    current_user: null,
 		    classes: [],
+			classInfo: [],
 			grutorClasses: [],
 		    showPopup: false,
 		    scrapedCourses: []
@@ -103,8 +105,8 @@ class App extends Component {
 		})
 	}
 
+	// callback function for adding a course using overlay
   	addCourse(course){
-		// callback function for adding a course using overlay
 	    var json = course;
 	    document.getElementById("course-info").textContent = "Added course: " + JSON.stringify(json, undefined, 2);
 
@@ -120,19 +122,53 @@ class App extends Component {
 		this.setCourses();
   	}
 
+	// function for setting up grutoring info for classes that User is IN
+	getGrutoringInfo(classes){
+		const usersRef = firebase.database().ref("Users");
+		const classesRef = firebase.database().ref("Classes");
+		var grutorInfo = [];
+		var usersSnapshot;
+		usersRef.on("value", (snapshot) => {
+			usersSnapshot = snapshot;
+		})
+		classesRef.on("value", (snapshot) => {
+			classes.forEach(function(classCode){
+				var grutors = snapshot.child(classCode).child("grutors");
+				if(grutors.exists()){
+					grutors.forEach(function(grutorName){
+						var obj = {};
+						obj[classCode] = usersSnapshot.child(grutorName.key).child("grutorClasses").child(classCode).val();
+						obj[classCode]["grutor"] = grutorName.key;
+						grutorInfo.push(obj);
+					})
+				}else{
+					var obj = {};
+					obj[classCode] = "No grutors for this class";
+					grutorInfo.push(obj);
+				}
+			});
+			this.setState({
+				classInfo: grutorInfo
+			}, function(){
+				document.getElementById("firebase-classes-info").textContent = "Class info: " + JSON.stringify(this.state.classInfo, undefined, 2);
+			})
+		})
+	}
+
 	// function to display courses from Firebase
 	setCourses(){
 		const currentUser = this.state.current_user.displayName;
-		const userPath = "Users"+"/"+currentUser;
-		const userRef = firebase.database().ref(userPath);
+		const userRef = firebase.database().ref("Users"+"/"+currentUser);
 		userRef.on('value', (snapshot) => {
 			if(snapshot.exists()){
 				var enrolledClasses = [];
 				var grutorClasses = [];
+				var classInfo = [];
 				if(snapshot.hasChild("classes")){
 					snapshot.child("classes").forEach(function(child){
 						enrolledClasses.push(child.key)
 					});
+					this.getGrutoringInfo(enrolledClasses);
 				}
 				if(snapshot.hasChild("grutorClasses")){
 					var data = snapshot.child("grutorClasses").val();
@@ -178,6 +214,11 @@ class App extends Component {
     	});
   	}
 
+	removeClass(courseCode){
+		// TODO: Implement functionality for removing class from Firebase on button click
+		alert("Remove class functionality yet to be implemented");
+	}
+
   	render() {
 	    return (
 	        <div>
@@ -192,13 +233,16 @@ class App extends Component {
 		                    <h1>Class List</h1>
 							{this.state.classes ?
 								<CheckboxGroup
-			                      	checkboxDepth={2} // This is needed to optimize the checkbox group
+			                      	checkboxDepth={3} // This is needed to optimize the checkbox group
 			                      	id="enrolledClasses"
 			                      	value={this.state.classes}
 			                      	onChange={this.classesChanged}>
 									{this.state.classes.map((enrolledClass) => {
 										return(
-											<label key={enrolledClass}><Checkbox value={enrolledClass} key={enrolledClass}/>{enrolledClass}<br></br></label>
+											<div key={enrolledClass}>
+												<label key={enrolledClass}><Checkbox value={enrolledClass} key={enrolledClass}/>{enrolledClass}<br></br></label>
+												<button key={enrolledClass+"_button"} value={enrolledClass} onClick={this.removeClass}>Remove class</button>
+											</div>
 										)
 									})}
 			                    </CheckboxGroup>
@@ -208,23 +252,30 @@ class App extends Component {
 							<h1>Grutoring List</h1>
 							{this.state.grutorClasses ?
 								<CheckboxGroup
-			                      	checkboxDepth={2} // This is needed to optimize the checkbox group
+			                      	checkboxDepth={3} // This is needed to optimize the checkbox group
 			                      	id="grutorClasses"
 			                      	value={this.state.grutorClasses}
 			                      	onChange={this.classesChanged}>
 									{this.state.grutorClasses.map((grutorClass) => {
 										var classCode = Object.keys(grutorClass)[0];
 										return(
-											<label key={classCode}><Checkbox value={classCode} key={classCode}/>{classCode}<br></br></label>
+											<div key={classCode}>
+												<label key={classCode}><Checkbox value={classCode} key={classCode}/>{classCode}<br></br></label>
+												<button key={classCode+"_button"} value={classCode} onClick={this.removeClass}>Remove class</button>
+											</div>
 										)
 									})}
 			                    </CheckboxGroup>
 								:
 								null
 							}
-
+							<h5>Data passed back from adding course:</h5>
 		                    <pre id="course-info"></pre>
+							<h5>Data passed back from Firebase regarding current user's classes:</h5>
 							<pre id="firebase-classes"></pre>
+							<h5>Data passed back from Firebase regarding grutoring hours of current user's classes:</h5>
+							<pre id="firebase-classes-info">{this.state.classInfo.length === 0 ? "No information for classes" : null}</pre>
+							<h5>Data passed back from Firebase regarding current user's grutoring duties:</h5>
 							<pre id="firebase-grutorClasses"></pre>
 	                  	</Column>
 	                  	{this.state.current_user ?
