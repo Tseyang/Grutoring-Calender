@@ -106,7 +106,7 @@ class App extends Component {
 	}
 
 	// callback function for adding a course using overlay
-  	addCourse(course){
+  addCourse(course){
 	    var json = course;
 	    document.getElementById("course-info").textContent = "Added course: " + JSON.stringify(json, undefined, 2);
 
@@ -120,7 +120,7 @@ class App extends Component {
 		this.addToUsers(name, course_entry, grutor, currentUser);
 		this.addToClasses(name, course_name, grutor, currentUser);
 		this.setCourses();
-  	}
+  }
 
 	// function for setting up grutoring info for classes that User is IN
 	getGrutoringInfo(classes){
