@@ -85,10 +85,10 @@ class App extends Component {
 		})
 	}
 
+	// adds course/grutor to Classes DB in Firebase
 	addToClasses(code, course_name, grutor, currentUser){
-		// adds course/grutor to Classes DB in Firebase
 		const classesRef = firebase.database().ref("Classes");
-		classesRef.once("value").then(function(snapshot, grutor){
+		classesRef.on("value", (snapshot) => {
 			// add course entry if its not there
 			if(!snapshot.hasChild(code)){
 				var course = {}
@@ -96,7 +96,7 @@ class App extends Component {
 				classesRef.child(code).set(course)
 			}
 			// add new grutor if not already present
-			if(grutor && !(snapshot.child(code).hasChild("grutors") && snapshot.child(code).child("grutors").hasChild(currentUser))){
+			if(grutor && !snapshot.child(code).child("grutors").child(currentUser).exists()){
 				var grutors = classesRef.child(code).child("grutors")
 				var data = {}
 				data[currentUser] = true; //can be replaced with actual data if we want it
@@ -299,7 +299,7 @@ class App extends Component {
 	            </div>
 	            {this.state.showPopup ?
 	                <ClassPopUp
-	                    scrapedCourses = {this.state.courses}
+	                    courses = {this.state.scrapedCourses}
 	                    closePopup = {this.togglePopup}
 	                    addCourse = {(course) => {this.addCourse(course)}}/>
 	                :
