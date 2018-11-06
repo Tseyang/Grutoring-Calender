@@ -470,10 +470,30 @@ class App extends Component {
       	});
   	}
 
-	// runs whenever component mounts
+	displayData() {
+	var userData = this.state.testState.map((item) => {
+		return (
+			<li key={item.id}>{item.classes[0]}
+			</li>
+		)});
+	return userData;
+	}
+
   	componentDidMount(){
     	auth.onAuthStateChanged((user) => {
       	if(user){
+			const usersRef = firebase.database().ref("Users"); 
+			usersRef.once('value', (snapshot) => {
+				console.log(snapshot.val());
+				let items = snapshot.val();
+    			let newState = [];
+    			for (let item in items) {
+					newState.push({
+						id: item,
+						class: items[item].classes,
+						grutorClassses: items[item].grutorClasses
+					});
+				}
           	this.setState({
               	current_user: user,
           	}, this.setCourses);
@@ -487,7 +507,7 @@ class App extends Component {
     	this.setState({
         	showPopup: !this.state.showPopup
     	});
-  	}
+  	};
 
 	// function for removing course from Firebase
 	removeClass(courseCode){
