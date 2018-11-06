@@ -29,7 +29,9 @@ class App extends Component {
 			grutorClasses: [], // info about classes that user GRUTORS
 		    showPopup: false,
 		    scrapedCourses: [],
-			usersSnapshot: null
+			usersSnapshot: null,
+			courses: [],
+			testState: []
 		};
 		// logic for using offline json document for course listings
 		var HMcourses = ScrapedCourses["courses"];
@@ -49,6 +51,7 @@ class App extends Component {
 		this.setCourses = this.setCourses.bind(this);
 		this.removeCourse = this.removeCourse.bind(this);
 		this.getGrutoringInfo = this.getGrutoringInfo.bind(this);
+		this.displayData = this.displayData.bind(this);
 	}
 
 	constructFirebaseEntry(json, grutor){
@@ -218,14 +221,35 @@ class App extends Component {
       	});
   	}
 
-	// runs whenever component mounts
+	displayData() {
+	var userData = this.state.testState.map((item) => {
+		return (
+			<li key={item.id}>{item.classes[0]}
+			</li>
+		)});
+	return userData;
+	}
+
   	componentDidMount(){
     	auth.onAuthStateChanged((user) => {
       	if(user){
+			const usersRef = firebase.database().ref("Users"); 
+			usersRef.once('value', (snapshot) => {
+				console.log(snapshot.val());
+				let items = snapshot.val();
+    			let newState = [];
+    			for (let item in items) {
+					newState.push({
+						id: item,
+						class: items[item].classes,
+						grutorClassses: items[item].grutorClasses
+					});
+				}
           	this.setState({
               	current_user: user,
           	}, this.setCourses);
-      	}
+		  })
+		}
     	});
   	}
 
@@ -234,7 +258,7 @@ class App extends Component {
     	this.setState({
         	showPopup: !this.state.showPopup
     	});
-  	}
+  	};
 
 	// function for removing course from Firebase
 	removeCourse(courseCode,isGrutor){
