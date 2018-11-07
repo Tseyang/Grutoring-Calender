@@ -88,19 +88,14 @@ class App extends Component {
 
 	// adds course/grutor to Classes DB in Firebase
 	addToClasses(code, course_name, grutor, currentUser){
-		console.log("we entered add to classes");
 		const classesRef = firebase.database().ref("Classes");
-		classesRef.on("value", (snapshot) => {
-			
-			// add course entry if its not there
+		classesRef.once("value").then(function(snapshot){
 			if(!snapshot.hasChild(code)){
-				
 				var course = {}
 				course[code] = course_name
 				classesRef.child(code).set(course)
 			}
 			// add new grutor if not already present
-			console.log(grutor);
 			if(grutor && !snapshot.child(code).child("grutors").child(currentUser).exists()){
 				var grutors = classesRef.child(code).child("grutors")
 				var data = {}
@@ -129,7 +124,6 @@ class App extends Component {
 
 	// function for setting up grutoring info for classes that User is IN
 	getGrutoringInfo(classes){
-		console.log("inside getGrutoringInfo");
 		const usersRef = firebase.database().ref("Users");
 		const classesRef = firebase.database().ref("Classes");
 		var grutorInfo = [];
@@ -138,7 +132,7 @@ class App extends Component {
 		usersRef.on("value", (snapshot) => {
 			usersSnapshot = snapshot;
 		})
-		// use Classes table and look at grutors for each class
+
 		classesRef.on("value", (snapshot) => {
 			classes.forEach(function(classCode){
 				// get grutors for this class
@@ -163,6 +157,7 @@ class App extends Component {
 			})
 		})
 	}
+
 
 	// function to display courses from Firebase
 	setCourses(){
@@ -231,14 +226,9 @@ class App extends Component {
 
 	// function for removing course from Firebase
 	removeCourse(courseCode,isGrutor){
-		// TODO: Implement functionality for removing class from Firebase on button click
-		//alert("Remove class functionality yet to be implemented");
-		//console.log(courseCode);
-		//const userRef = null;
 		if (isGrutor){
 			const userRef = firebase.database().ref(`/Users/${this.state.current_user.displayName}/grutorClasses/${courseCode}`);
 			const grutorRef = firebase.database().ref(`/Classes/${courseCode}/grutors/${this.state.current_user.displayName}`);
-			console.log(grutorRef);
 			grutorRef.remove()
 				.then(function() {
 					console.log("Remove succeeded.")
@@ -247,16 +237,11 @@ class App extends Component {
 					console.log("Remove failed: " + error.message)
 				});
 			userRef.remove();
-			console.log(courseCode)
-			console.log(this.state.current_user.displayName)
-			
 		}
 		else{
 			const userRef = firebase.database().ref(`/Users/${this.state.current_user.displayName}/classes/${courseCode}`);
 			userRef.remove();
 		}
-		
-        
 	}
 
   	render() {
