@@ -38,6 +38,7 @@ class App extends Component {
 		this.addCourse = this.addCourse.bind(this);
 		this.logout = this.logout.bind(this);
 		this.setCourses = this.setCourses.bind(this);
+		this.removeCourse = this.removeCourse.bind(this);
 	}
 
 	constructFirebaseEntry(json, grutor){
@@ -88,8 +89,7 @@ class App extends Component {
 	// adds course/grutor to Classes DB in Firebase
 	addToClasses(code, course_name, grutor, currentUser){
 		const classesRef = firebase.database().ref("Classes");
-		classesRef.on("value", (snapshot) => {
-			// add course entry if its not there
+		classesRef.once("value").then(function(snapshot){
 			if(!snapshot.hasChild(code)){
 				var course = {}
 				course[code] = course_name
@@ -132,7 +132,7 @@ class App extends Component {
 		usersRef.on("value", (snapshot) => {
 			usersSnapshot = snapshot;
 		})
-		// use Classes table and look at grutors for each class
+
 		classesRef.on("value", (snapshot) => {
 			classes.forEach(function(classCode){
 				// get grutors for this class
@@ -157,6 +157,7 @@ class App extends Component {
 			})
 		})
 	}
+
 
 	// function to display courses from Firebase
 	setCourses(){
@@ -224,9 +225,23 @@ class App extends Component {
   	}
 
 	// function for removing course from Firebase
-	removeClass(courseCode){
-		// TODO: Implement functionality for removing class from Firebase on button click
-		alert("Remove class functionality yet to be implemented");
+	removeCourse(courseCode,isGrutor){
+		if (isGrutor){
+			const userRef = firebase.database().ref(`/Users/${this.state.current_user.displayName}/grutorClasses/${courseCode}`);
+			const grutorRef = firebase.database().ref(`/Classes/${courseCode}/grutors/${this.state.current_user.displayName}`);
+			grutorRef.remove()
+				.then(function() {
+					console.log("Remove succeeded.")
+				})
+				.catch(function(error) {
+					console.log("Remove failed: " + error.message)
+				});
+			userRef.remove();
+		}
+		else{
+			const userRef = firebase.database().ref(`/Users/${this.state.current_user.displayName}/classes/${courseCode}`);
+			userRef.remove();
+		}
 	}
 
   	render() {
@@ -251,7 +266,7 @@ class App extends Component {
 										return(
 											<div key={enrolledClass}>
 												<label key={enrolledClass}><Checkbox value={enrolledClass} key={enrolledClass}/>{enrolledClass}<br></br></label>
-												<button key={enrolledClass+"_button"} value={enrolledClass} onClick={this.removeClass}>Remove class</button>
+												<button onClick={() => this.removeCourse(enrolledClass,false)}>Remove class</button>
 											</div>
 										)
 									})}
@@ -271,7 +286,7 @@ class App extends Component {
 										return(
 											<div key={classCode}>
 												<label key={classCode}><Checkbox value={classCode} key={classCode}/>{classCode}<br></br></label>
-												<button key={classCode+"_button"} value={classCode} onClick={this.removeClass}>Remove class</button>
+												<button onClick={() => this.removeCourse(classCode,true)}>Remove class</button>
 											</div>
 										)
 									})}
