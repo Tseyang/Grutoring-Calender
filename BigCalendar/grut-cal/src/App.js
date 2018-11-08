@@ -14,7 +14,6 @@ import ScrapedCourses from "./courses.js";
 import './css/App.css';
 import './css/react-big-calendar.css';
 
-//necessary to make sure dates work
 const localizer = BigCalendar.momentLocalizer(moment)
 const classesRef = firebase.database().ref("Classes");
 const usersRef = firebase.database().ref("Users");
@@ -31,7 +30,8 @@ class App extends Component {
 		    scrapedCourses: [],
 			usersSnapshot: null,
 			courses: [],
-			testState: []
+			testState: [],
+				calendarGrutorEvents: []
 		};
 		// logic for using offline json document for course listings
 		var HMcourses = ScrapedCourses["courses"];
@@ -54,11 +54,38 @@ class App extends Component {
 		this.displayData = this.displayData.bind(this);
 	}
 
+	
+
+	mapGrutorEvents(calendarGrutorEvents){
+		var grutorClasses = calendarGrutorEvents.map((hour) => {
+		return (
+		  <label>{hour.title}<input type="checkbox" value=
+		  {hour.title} checked ={hour.isChecked} onChange = {this.toggleClass.bind(this)}/> <br></br></label>)});
+		return grutorClasses};
+
+	
+	toggleClass(event) {
+		const title = event.target.value;
+		for(let entry in this.state.calendarGrutorEvents){
+			if (this.state.calendarGrutorEvents[entry].title === title){
+				this.state.calendarGrutorEvents[entry].isChecked = !(this.state.calendarGrutorEvents[entry].isChecked);
+			}
+		}
+		this.setState({calendarGrutorEvents: this.state.calendarGrutorEvents})
+	}
+
+	eventList(calendarGrutorEvents){
+		var newEvents = calendarGrutorEvents.filter(attr => {
+		  return attr.isChecked === true;
+		});
+		  return newEvents
+		  
+		  };
+
 	constructFirebaseEntry(json, grutor){
 		// function to construct Firebase course entry
 		var name = json["course"].substr(0, json["course"].indexOf(" "));
 		var course = {};
-		console.log(json)
 		if(grutor){
 			// grutor logic
 			course[name] = {
@@ -221,44 +248,30 @@ class App extends Component {
       	});
   	}
 
-	displayData() {
-	var userData = this.state.testState.map((item) => {
-		return (
-			<li key={item.id}>{item.classes[0]}
-			</li>
-		)});
-	return userData;
-	}
-
+	// runs whenever component mounts
   	componentDidMount(){
     	auth.onAuthStateChanged((user) => {
       	if(user){
-			const usersRef = firebase.database().ref("Users"); 
-			usersRef.once('value', (snapshot) => {
-				console.log(snapshot.val());
-				let items = snapshot.val();
-    			let newState = [];
-    			for (let item in items) {
-					newState.push({
-						id: item,
-						class: items[item].classes,
-						grutorClassses: items[item].grutorClasses
-					});
-				}
           	this.setState({
               	current_user: user,
           	}, this.setCourses);
-		  })
-		}
-    	});
-  	}
+		  }
+		})
+    	}
+  	
 
 	// toggles the display of the add course overlay
   	togglePopup(){
     	this.setState({
         	showPopup: !this.state.showPopup
     	});
-  	};
+  	}
+
+	// function for removing course from Firebase
+	removeClass(courseCode){
+		// TODO: Implement functionality for removing class from Firebase on button click
+		alert("Remove class functionality yet to be implemented");
+	}
 
 	// function for removing course from Firebase
 	removeCourse(courseCode,isGrutor){
@@ -352,10 +365,11 @@ class App extends Component {
 	                  	}
 	                  	<Column flexGrow={1} horizontal='center'>
 	                      	<BigCalendar
-	                      	localizer={localizer}
-	                      	events={[]}
-	                      	startAccessor="startDate"
-	                      	endAccessor="endDate"
+													selectable
+								          localizer={localizer}
+								          events={this.eventList(this.state.calendarGrutorEvents)}
+								          defaultView={BigCalendar.Views.WEEK}
+								          defaultDate={new Date(moment())}
 	                    	/>
 	                  	</Column>
 	                </Row>
