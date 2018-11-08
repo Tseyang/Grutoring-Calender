@@ -14,7 +14,7 @@ class ClassPopUp extends Component {
                 grutor: false,
                 repeat: false,
                 location: null,
-                date: null,
+                day: null,
                 startTime: null,
                 endTime: null,
             }
@@ -53,7 +53,7 @@ class ClassPopUp extends Component {
             newState = {
                 repeat:  data.get("repeat"),
                 location: data.get("location"),
-                date: data.get("date"),
+                day: data.get("day"),
                 startTime: data.get("startTime"),
                 endTime: data.get("endTime")
             }
@@ -81,13 +81,22 @@ class ClassPopUp extends Component {
                                     Permanent <input type="checkbox" name="repeat" onClick={this.toggleRepeat}></input><br/>
                                     {this.state.repeat ?
                                         <div>
-                                            Select the date for your weekly grutoring hours:
+                                            Select the day for your weekly grutoring hours:
                                         </div>
                                         :
                                         <div>
-                                            Select the date for your temporary grutoring hours:
+                                            Select the day for your temporary grutoring hours:
                                         </div>
-                                    }Date: <input type="date" name="date" required></input><br/>
+                                    }Day:
+                                    <select name="day" required>
+                                        <option value="Monday">Monday</option>
+                                        <option value="Tuesday">Tuesday</option>
+                                        <option value="Wednesday">Wednesday</option>
+                                        <option value="Thursday">Thursday</option>
+                                        <option value="Friday">Friday</option>
+                                        <option value="Saturday">Saturday</option>
+                                        <option value="Sunday">Sunday</option>
+                                    </select><br/>
                                     Start time: <input type="time" name="startTime" required></input><br/>
                                     End time: <input type="time" name="endTime" required></input>
                                 </div>

@@ -46,13 +46,14 @@ class App extends Component {
 		// function to construct Firebase course entry
 		var name = json["course"].substr(0, json["course"].indexOf(" "));
 		var course = {};
+		console.log(json)
 		if(grutor){
 			// grutor logic
 			course[name] = {
 					location: json["location"],
 					startTime: json["startTime"],
 					endTime: json["endTime"],
-					startDate: json["date"]
+					day: json["day"]
 			}
 		} else {
 			// add to classes child in Firebase
