@@ -261,44 +261,52 @@ class App extends Component {
 	            <div className="body">
 	                <Row vertical='center'>
 	                  	<Column flexGrow={1} horizontal='center'>
-		                    <h1>Class List</h1>
-							{this.state.classes ?
-								<CheckboxGroup
-			                      	checkboxDepth={3} // This is needed to optimize the checkbox group
-			                      	id="enrolledClasses"
-			                      	value={this.state.classes}
-			                      	onChange={this.classesChanged}>
-									{this.state.classes.map((enrolledClass) => {
-										return(
-											<div key={enrolledClass}>
-												<label key={enrolledClass}><Checkbox value={enrolledClass} key={enrolledClass}/>{enrolledClass}<br></br></label>
-												<button onClick={() => this.removeCourse(enrolledClass,false)}>Remove class</button>
-											</div>
-										)
-									})}
-			                    </CheckboxGroup>
-								:
-								null
-							}
-							<h1>Grutoring List</h1>
-							{this.state.grutorClasses ?
-								<CheckboxGroup
-			                      	checkboxDepth={3} // This is needed to optimize the checkbox group
-			                      	id="grutorClasses"
-			                      	value={this.state.grutorClasses}
-			                      	onChange={this.classesChanged}>
-									{this.state.grutorClasses.map((grutorClass) => {
-										var classCode = Object.keys(grutorClass)[0];
-										return(
-											<div key={classCode}>
-												<label key={classCode}><Checkbox value={classCode} key={classCode}/>{classCode}<br></br></label>
-												<button onClick={() => this.removeCourse(classCode,true)}>Remove class</button>
-											</div>
-										)
-									})}
-			                    </CheckboxGroup>
-								:
-								null
+							{this.state.current_user ?
+							<div>
+								<h1>Class List</h1>
+								{this.state.classes ?
+									<CheckboxGroup
+				                      	checkboxDepth={3} // This is needed to optimize the checkbox group
+				                      	id="enrolledClasses"
+				                      	value={this.state.classes}
+				                      	onChange={this.classesChanged}>
+										{this.state.classes.map((enrolledClass) => {
+											return(
+												<div key={enrolledClass}>
+													<label key={enrolledClass}><Checkbox value={enrolledClass} key={enrolledClass}/>{enrolledClass}<br></br></label>
+													<button onClick={() => this.removeCourse(enrolledClass,false)}>Remove class</button>
+												</div>
+											)
+										})}
+				                    </CheckboxGroup>
+									:
+									null
+								}
+								<h1>Grutoring List</h1>
+								{this.state.grutorClasses ?
+									<CheckboxGroup
+				                      	checkboxDepth={3} // This is needed to optimize the checkbox group
+				                      	id="grutorClasses"
+				                      	value={this.state.grutorClasses}
+				                      	onChange={this.classesChanged}>
+										{this.state.grutorClasses.map((grutorClass) => {
+											var classCode = Object.keys(grutorClass)[0];
+											return(
+												<div key={classCode}>
+													<label key={classCode}><Checkbox value={classCode} key={classCode}/>{classCode}<br></br></label>
+													<button onClick={() => this.removeCourse(classCode,true)}>Remove class</button>
+												</div>
+											)
+										})}
+				                    </CheckboxGroup>
+									:
+									null
+								}
+							</div>
+							:
+							<div>
+								<h1>No classes for a non-logged in user.</h1>
+							</div>
 							}
 							<h5>Data passed back from adding course:</h5>
 		                    <pre id="course-info"></pre>
