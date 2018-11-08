@@ -15,7 +15,8 @@ import './css/App.css';
 import './css/react-big-calendar.css';
 
 const localizer = BigCalendar.momentLocalizer(moment)
-// TODO: Move Firebase refs out of functions where possible to global
+const classesRef = firebase.database().ref("Classes");
+
 
 class App extends Component {
 	constructor(props) {
@@ -88,7 +89,6 @@ class App extends Component {
 
 	// adds course/grutor to Classes DB in Firebase
 	addToClasses(code, course_name, grutor, currentUser){
-		const classesRef = firebase.database().ref("Classes");
 		classesRef.once("value").then(function(snapshot){
 			if(!snapshot.hasChild(code)){
 				var course = {}
@@ -108,7 +108,7 @@ class App extends Component {
 	// callback function for adding a course using overlay
   addCourse(course){
 	    var json = course;
-	    //document.getElementById("course-info").textContent = "Added course: " + JSON.stringify(json, undefined, 2);
+	    document.getElementById("course-info").textContent = "Added course: " + JSON.stringify(json, undefined, 2);
 
 	    //json
 	    const currentUser = this.state.current_user.displayName;
@@ -125,7 +125,6 @@ class App extends Component {
 	// function for setting up grutoring info for classes that User is IN
 	getGrutoringInfo(classes){
 		const usersRef = firebase.database().ref("Users");
-		const classesRef = firebase.database().ref("Classes");
 		var grutorInfo = [];
 		var usersSnapshot;
 		// capture users Table
@@ -134,26 +133,31 @@ class App extends Component {
 		})
 
 		classesRef.on("value", (snapshot) => {
-			classes.forEach(function(classCode){
-				// get grutors for this class
-				var grutors = snapshot.child(classCode).child("grutors");
-				if(grutors.exists()){
-					grutors.forEach(function(grutorName){
+			if(usersSnapshot !== null){
+				classes.forEach(function(classCode){
+					// get grutors for this class
+					var grutors = snapshot.child(classCode).child("grutors");
+					if(grutors.exists()){
+						grutors.forEach(function(grutorName){
+							var obj = {};
+							obj[classCode] = usersSnapshot.child(grutorName.key).child("grutorClasses").child(classCode).val();
+							obj[classCode]["grutor"] = grutorName.key;
+							grutorInfo.push(obj);
+						})
+					}else{
 						var obj = {};
-						obj[classCode] = usersSnapshot.child(grutorName.key).child("grutorClasses").child(classCode).val();
-						obj[classCode]["grutor"] = grutorName.key;
+						obj[classCode] = "No grutors for this class";
 						grutorInfo.push(obj);
-					})
-				}else{
-					var obj = {};
-					obj[classCode] = "No grutors for this class";
-					grutorInfo.push(obj);
-				}
-			});
+					}
+				});
+			}else{
+				grutorInfo = [];
+			}
+			// set state whenever snapshot changes
 			this.setState({
 				classInfo: grutorInfo
 			}, function(){
-				//document.getElementById("firebase-classes-info").textContent = "Class info: " + JSON.stringify(this.state.classInfo, undefined, 2);
+				document.getElementById("firebase-classes-info").textContent = "Class info: " + JSON.stringify(this.state.classInfo, undefined, 2);
 			})
 		})
 	}
@@ -185,15 +189,16 @@ class App extends Component {
 						grutorClasses.push(obj);
 					}
 				}
-				this.setState({
-					classes: enrolledClasses,
-					grutorClasses: grutorClasses
-				}, function(){
-					// informative representation of data on webpage, can be deleted when not needed anymore
-					//document.getElementById("firebase-classes").textContent = "Classes: " + this.state.classes;
-					//document.getElementById("firebase-grutorClasses").textContent = "grutorClasses: " + JSON.stringify(this.state.grutorClasses, undefined, 2);
-				})
 			}
+			// set state whenever snapshot changes
+			this.setState({
+				classes: enrolledClasses,
+				grutorClasses: grutorClasses
+			}, function(){
+				// informative representation of data on webpage, can be deleted when not needed anymore
+				document.getElementById("firebase-classes").textContent = "Classes: " + this.state.classes;
+				document.getElementById("firebase-grutorClasses").textContent = "grutorClasses: " + JSON.stringify(this.state.grutorClasses, undefined, 2);
+			})
 		})
 	}
 
@@ -294,7 +299,14 @@ class App extends Component {
 								:
 								null
 							}
-							
+							<h5>Data passed back from adding course:</h5>
+		                    <pre id="course-info"></pre>
+							<h5>Data passed back from Firebase regarding current user's classes:</h5>
+							<pre id="firebase-classes"></pre>
+							<h5>Data passed back from Firebase regarding grutoring hours of current user's classes:</h5>
+							<pre id="firebase-classes-info">{this.state.classInfo.length === 0 ? "No information for classes" : null}</pre>
+							<h5>Data passed back from Firebase regarding current user's grutoring duties:</h5>
+							<pre id="firebase-grutorClasses"></pre>
 	                  	</Column>
 	                  	{this.state.current_user ?
 		                  	<div>
