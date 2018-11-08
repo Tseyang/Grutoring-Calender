@@ -108,7 +108,7 @@ class App extends Component {
 	// callback function for adding a course using overlay
   addCourse(course){
 	    var json = course;
-	    document.getElementById("course-info").textContent = "Added course: " + JSON.stringify(json, undefined, 2);
+	    //document.getElementById("course-info").textContent = "Added course: " + JSON.stringify(json, undefined, 2);
 
 	    //json
 	    const currentUser = this.state.current_user.displayName;
@@ -153,7 +153,7 @@ class App extends Component {
 			this.setState({
 				classInfo: grutorInfo
 			}, function(){
-				document.getElementById("firebase-classes-info").textContent = "Class info: " + JSON.stringify(this.state.classInfo, undefined, 2);
+				//document.getElementById("firebase-classes-info").textContent = "Class info: " + JSON.stringify(this.state.classInfo, undefined, 2);
 			})
 		})
 	}
@@ -190,8 +190,8 @@ class App extends Component {
 					grutorClasses: grutorClasses
 				}, function(){
 					// informative representation of data on webpage, can be deleted when not needed anymore
-					document.getElementById("firebase-classes").textContent = "Classes: " + this.state.classes;
-					document.getElementById("firebase-grutorClasses").textContent = "grutorClasses: " + JSON.stringify(this.state.grutorClasses, undefined, 2);
+					//document.getElementById("firebase-classes").textContent = "Classes: " + this.state.classes;
+					//document.getElementById("firebase-grutorClasses").textContent = "grutorClasses: " + JSON.stringify(this.state.grutorClasses, undefined, 2);
 				})
 			}
 		})
@@ -294,14 +294,7 @@ class App extends Component {
 								:
 								null
 							}
-							<h5>Data passed back from adding course:</h5>
-		                    <pre id="course-info"></pre>
-							<h5>Data passed back from Firebase regarding current user's classes:</h5>
-							<pre id="firebase-classes"></pre>
-							<h5>Data passed back from Firebase regarding grutoring hours of current user's classes:</h5>
-							<pre id="firebase-classes-info">{this.state.classInfo.length === 0 ? "No information for classes" : null}</pre>
-							<h5>Data passed back from Firebase regarding current user's grutoring duties:</h5>
-							<pre id="firebase-grutorClasses"></pre>
+							
 	                  	</Column>
 	                  	{this.state.current_user ?
 		                  	<div>
