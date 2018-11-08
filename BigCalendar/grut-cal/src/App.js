@@ -46,7 +46,6 @@ class App extends Component {
 		// function to construct Firebase course entry
 		var name = json["course"].substr(0, json["course"].indexOf(" "));
 		var course = {};
-		console.log(json)
 		if(grutor){
 			// grutor logic
 			course[name] = {
@@ -256,6 +255,7 @@ class App extends Component {
 	            <Row>
 	                <Navbar
 	                    logout={this.logout}
+						current_user = {this.state.current_user}
 	                />
 	            </Row>
 	            <div className="body">
