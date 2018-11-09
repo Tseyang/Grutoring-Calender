@@ -16,7 +16,7 @@ import './css/react-big-calendar.css';
 
 const localizer = BigCalendar.momentLocalizer(moment)
 const classesRef = firebase.database().ref("Classes");
-
+const usersRef = firebase.database().ref("Users");
 
 class App extends Component {
 	constructor(props) {
@@ -63,7 +63,6 @@ class App extends Component {
 
 	addToUsers(name, course_entry, grutor, currentUser){
 		//add course to Users DB in Firebase
-		const usersRef = firebase.database().ref("Users");
 		usersRef.once("value").then(function(snapshot){
 			if(grutor){
 				var grutorClasses = usersRef.child(currentUser).child("grutorClasses");
@@ -124,15 +123,14 @@ class App extends Component {
 
 	// function for setting up grutoring info for classes that User is IN
 	getGrutoringInfo(classes){
-		const usersRef = firebase.database().ref("Users");
-		var grutorInfo = [];
-		var usersSnapshot;
+		let usersSnapshot = null;
 		// capture users Table
 		usersRef.on("value", (snapshot) => {
 			usersSnapshot = snapshot;
 		})
 
 		classesRef.on("value", (snapshot) => {
+			var grutorInfo = [];
 			if(usersSnapshot !== null){
 				classes.forEach(function(classCode){
 					// get grutors for this class
@@ -178,6 +176,7 @@ class App extends Component {
 					snapshot.child("classes").forEach(function(child){
 						enrolledClasses.push(child.key)
 					});
+					console.log("getting grutoring info")
 					this.getGrutoringInfo(enrolledClasses);
 				}
 				// get classes this user is grutoring for
@@ -247,6 +246,7 @@ class App extends Component {
 			const userRef = firebase.database().ref(`/Users/${this.state.current_user.displayName}/classes/${courseCode}`);
 			userRef.remove();
 		}
+		this.setCourses();
 	}
 
   	render() {
