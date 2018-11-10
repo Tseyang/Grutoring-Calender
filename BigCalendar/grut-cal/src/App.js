@@ -30,8 +30,8 @@ class App extends Component {
 		    scrapedCourses: [],
 			usersSnapshot: null,
 			courses: [],
-			testState: [],
-				calendarGrutorEvents: []
+			calendarGruteeEvents: [], // events display format of grutee events
+			calendarGrutorEvents: [] // events display format of grutor events
 		};
 		// logic for using offline json document for course listings
 		var HMcourses = ScrapedCourses["courses"];
@@ -52,9 +52,19 @@ class App extends Component {
 		this.removeCourse = this.removeCourse.bind(this);
 		this.getGrutoringInfo = this.getGrutoringInfo.bind(this);
 		this.displayData = this.displayData.bind(this);
+		this.mapGruteeEvents = this.mapGruteeEvents.bind(this);
+		this.addIsChecked = this.addIsChecked.bind(this);
+		this.getChecked = this.getChecked.bind(this);
 	}
 
-	
+	addIsChecked(){
+		let test = [];
+		for(let event in this.state.classes){
+			let obj = {value: this.state.classes[event], isChecked: false};
+			test.push(obj);
+			console.log(test);
+		};
+	};
 
 	mapGrutorEvents(calendarGrutorEvents){
 		var grutorClasses = calendarGrutorEvents.map((hour) => {
@@ -62,6 +72,30 @@ class App extends Component {
 		  <label>{hour.title}<input type="checkbox" value=
 		  {hour.title} checked ={hour.isChecked} onChange = {this.toggleClass.bind(this)}/> <br></br></label>)});
 		return grutorClasses};
+
+	mapGruteeEvents(){
+		var gruteeClasses = this.state.classes.map((enrolledClass) => {
+			return(
+				<div key={enrolledClass.value}>
+					<label>{enrolledClass.value}<input type="checkbox" value={enrolledClass.value} 
+					checked ={enrolledClass.isChecked} onChange = {this.toggleGruteeClass.bind(this)}/> <br></br></label>
+					<button key={enrolledClass.value+"_button"} value={enrolledClass.value} onClick={this.removeClass}>Remove class</button>
+				</div>
+			)
+		})
+		//  calendarGruteeEvents.map((hour) => {
+		// 	console.log(this.state.tempClassList.indexOf(hour.title));
+		// 	if(this.state.tempClassList.indexOf(hour.title) == -1){
+		// 		console.log(this.state.tempClassList.includes(hour.title), "for", hour.title);
+		// 		this.state.tempClassList.push(hour.title);
+		// 		return (
+		// 			<label>{hour.title}<input type="checkbox" value={hour.title} 
+		// 			checked ={hour.isChecked} onChange = {this.toggleClass.bind(this)}/> <br></br></label>
+		// 		)
+		// 	}});
+		console.log("made it to the end");
+		return gruteeClasses;
+	};
 
 	
 	toggleClass(event) {
@@ -74,6 +108,16 @@ class App extends Component {
 		this.setState({calendarGrutorEvents: this.state.calendarGrutorEvents})
 	}
 
+	toggleGruteeClass(event) {
+		const title = event.target.value;
+		for(let entry in this.state.classes){
+			if (this.state.classes[entry].value == title){
+				this.state.classes[entry].isChecked = !(this.state.classes[entry].isChecked);
+			}
+		}
+		this.setState({calendarGruteeEvents: this.state.calendarGruteeEvents})
+	}
+
 	eventList(calendarGrutorEvents){
 		var newEvents = calendarGrutorEvents.filter(attr => {
 		  return attr.isChecked === true;
@@ -81,6 +125,23 @@ class App extends Component {
 		  return newEvents
 		  
 		  };
+	
+	getChecked(className){
+		for(let entry in this.state.classes){
+			if(this.state.classes[entry].value == className){
+				return this.state.classes[entry].isChecked
+			}
+		}
+		return false;
+	}
+
+	eventListGrutee(calendarGruteeEvents){
+	var newEvents = calendarGruteeEvents.filter(attr => {
+		return this.getChecked(attr.title) === true;
+	});
+		return newEvents
+		
+		};
 
 	constructFirebaseEntry(json, grutor){
 		// function to construct Firebase course entry
@@ -184,11 +245,119 @@ class App extends Component {
 				grutorInfo = [];
 			}
 			// set state whenever snapshot changes
+			});
+			this.parseGruteeEventsList(grutorInfo);
 			this.setState({
 				classInfo: grutorInfo
 			}, function(){
 			})
 		})
+	}
+
+	// Helper function that parses grutorClasses obtained from Firebase into events
+	// list to be displayed on calendar
+	parseGrutorEventsList(grutorClasses) {
+
+		// Initialize variable that events object uses
+		var title = "";
+		var start = "";
+		var end = "";
+		var isChecked = "";
+
+		// Initiliaze variables that have to be stored for parsing
+		var startDate = "";
+		var startTime = "";
+		var dateTimeStringStart = "";
+		var endDate = "";
+		var endTime = "";
+		var dateTimeStringEnd = "";
+		var tempEvents = [];
+
+		// Iterate through every {} object in grutorInfo
+		for(var i = 0; i < grutorClasses.length; i++) {
+			var currentGrutorClassPropsObject = grutorClasses[i];
+			// parse title from grutorClasses list
+			title = Object.keys(grutorClasses[i])[0];
+
+			//parse start date and time from grutorClasses list
+			startDate = Object.values(Object.values(grutorClasses[i])[0])[2];
+			startTime = Object.values(Object.values(grutorClasses[i])[0])[3];
+			dateTimeStringStart = startDate + " " + startTime;
+			start = new Date(moment(dateTimeStringStart, 'YYYY-MM-DD HH:mm'));
+
+			// parse end date and time from grutorClasses list
+			endDate = Object.values(Object.values(grutorClasses[i])[0])[2];
+			endTime = Object.values(Object.values(grutorClasses[i])[0])[0];
+			dateTimeStringEnd = endDate + " " + endTime;
+			end = new Date(moment(dateTimeStringEnd, 'YYYY-MM-DD HH:mm'));
+
+			isChecked = false;
+			var obj = {
+				title,
+				start,
+				end,
+				isChecked
+			}
+			tempEvents.push(obj)
+			this.setState({
+				calendarGrutorEvents: tempEvents});
+			// Now we update the current state to reflect changes in events displayed
+			// on the calendar
+		}
+	}
+
+	parseGruteeEventsList(classInfo) {
+
+		// Initialize variable that events object uses
+		var title = "";
+		var start = "";
+		var end = "";
+		var isChecked = "";
+
+		// Initiliaze variables that have to be stored for parsing
+		var startDate = "";
+		var startTime = "";
+		var dateTimeStringStart = "";
+		var endDate = "";
+		var endTime = "";
+		var dateTimeStringEnd = "";
+		var tempEventsList = [];
+
+		// Iterate through every {} object in grutorInfo
+		for(var i = 0; i < classInfo.length; i++) {
+			var currentGrutorClassPropsObject = classInfo[i];
+			// parse title from grutorClasses list
+			title = Object.keys(classInfo[i])[0];
+
+			//parse start date and time from grutorClasses list
+			startDate = Object.values(Object.values(classInfo[i])[0])[2];
+			startTime = Object.values(Object.values(classInfo[i])[0])[3];
+			dateTimeStringStart = startDate + " " + startTime;
+			start = new Date(moment(dateTimeStringStart, 'YYYY-MM-DD HH:mm'));
+
+			// parse end date and time from grutorClasses list
+			endDate = Object.values(Object.values(classInfo[i])[0])[2];
+			endTime = Object.values(Object.values(classInfo[i])[0])[0];
+			dateTimeStringEnd = endDate + " " + endTime;
+			end = new Date(moment(dateTimeStringEnd, 'YYYY-MM-DD HH:mm'));
+			isChecked = false;
+
+			var obj = {
+				title,
+				start,
+				end,
+				isChecked
+			};
+
+			tempEventsList.push(obj);
+			}
+
+		// Now we update the current state to reflect changes in events displayed
+		// on the calendar
+		this.setState({
+			calendarGruteeEvents: tempEventsList
+		});
+
 	}
 
 
@@ -228,10 +397,16 @@ class App extends Component {
 						}
 					}
 				}
-				// set state whenever snapshot changes
+				// Parse event title, startTime, and endTime for calendar display
+				this.parseGrutorEventsList(grutorClasses);
+				let withCheck = [];
+				for(let event in enrolledClasses){
+					let obj = {value: enrolledClasses[event], isChecked: false};
+					withCheck.push(obj);
+				};
 				this.setState({
-					classes: enrolledClasses,
-					grutorClasses: grutoringClasses
+					classes: withCheck,
+					grutorClasses: grutorClasses
 				}, function(){
 					
 				})
@@ -305,54 +480,26 @@ class App extends Component {
 	            <div className="body">
 	                <Row vertical='center'>
 	                  	<Column flexGrow={1} horizontal='center'>
-							{this.state.current_user ?
-							<div>
-								<h1>Class List</h1>
-								{this.state.classes ?
-									<CheckboxGroup
-				                      	checkboxDepth={3} // This is needed to optimize the checkbox group
-				                      	id="enrolledClasses"
-				                      	value={this.state.classes}
-				                      	onChange={this.classesChanged}>
-										{this.state.classes.map((enrolledClass) => {
-											return(
-												<div key={enrolledClass}>
-													<label key={enrolledClass}><Checkbox value={enrolledClass} key={enrolledClass}/>{enrolledClass}<br></br></label>
-													<button onClick={() => this.removeCourse(enrolledClass,false)}>Remove class</button>
-												</div>
-											)
-										})}
-				                    </CheckboxGroup>
-									:
-									null
-								}
-								<h1>Grutoring List</h1>
-								{this.state.grutorClasses ?
-									<CheckboxGroup
-				                      	checkboxDepth={3} // This is needed to optimize the checkbox group
-				                      	id="grutorClasses"
-				                      	value={this.state.grutorClasses}
-				                      	onChange={this.classesChanged}>
-										{this.state.grutorClasses.map((grutorClass) => {
-											var classCode = Object.keys(grutorClass)[0];
-											return(
-												<div key={classCode}>
-													<label key={classCode}><Checkbox value={classCode} key={classCode}/>{classCode}<br></br></label>
-													<button onClick={() => this.removeCourse(classCode,true)}>Remove class</button>
-												</div>
-											)
-										})}
-				                    </CheckboxGroup>
-									:
-									null
-								}
-							</div>
-							:
-							<div>
-								<h1>No classes for a non-logged in user.</h1>
-							</div>
+		                    <h1>Class List</h1>
+							<form>
+							{this.state.classes ?
+								this.mapGruteeEvents(this.state.calendarGruteeEvents)
+								:
+								null
 							}
-			
+							</form>
+							<h1>Grutoring List</h1>
+							<form>
+							{ this.mapGrutorEvents(this.state.calendarGrutorEvents) } 
+							</form>
+							<h5>Data passed back from adding course:</h5>
+		                    <pre id="course-info"></pre>
+							<h5>Data passed back from Firebase regarding current user's classes:</h5>
+							<pre id="firebase-classes"></pre>
+							<h5>Data passed back from Firebase regarding grutoring hours of current user's classes:</h5>
+							<pre id="firebase-classes-info">{this.state.classInfo.length === 0 ? "No information for classes" : null}</pre>
+							<h5>Data passed back from Firebase regarding current user's grutoring duties:</h5>
+							<pre id="firebase-grutorClasses"></pre>
 	                  	</Column>
 	                  	{this.state.current_user ?
 		                  	<div>
@@ -367,7 +514,7 @@ class App extends Component {
 	                      	<BigCalendar
 													selectable
 								          localizer={localizer}
-								          events={this.eventList(this.state.calendarGrutorEvents)}
+								          events={(this.eventList(this.state.calendarGrutorEvents)).concat(this.eventListGrutee(this.state.calendarGruteeEvents))}
 								          defaultView={BigCalendar.Views.WEEK}
 								          defaultDate={new Date(moment())}
 	                    	/>
