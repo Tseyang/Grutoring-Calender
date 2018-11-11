@@ -8,7 +8,7 @@ class Navbar extends Component{
     constructor(props){
         super(props);
         this.state = {
-            current_user: props
+            current_user: props.current_user,
         };
         this.login = this.login.bind(this);
         this.logout = this.logout.bind(this);

@@ -256,6 +256,7 @@ class App extends Component {
 	            <Row>
 	                <Navbar
 	                    logout={this.logout}
+						current_user = {this.state.current_user}
 	                />
 	            </Row>
 	            <div className="body">
