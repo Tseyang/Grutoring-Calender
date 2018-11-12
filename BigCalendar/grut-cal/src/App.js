@@ -11,7 +11,8 @@ import ClassPopUp from './AddClassPopUp';
 
 import ScrapedCourses from "./courses.js";
 
-import './css/App.css';
+import './css/App.css'
+import './css/class-panel.css';
 import './css/react-big-calendar.css';
 
 const localizer = BigCalendar.momentLocalizer(moment)
@@ -53,18 +54,8 @@ class App extends Component {
 		this.getGrutoringInfo = this.getGrutoringInfo.bind(this);
 		this.displayData = this.displayData.bind(this);
 		this.mapGruteeEvents = this.mapGruteeEvents.bind(this);
-		this.addIsChecked = this.addIsChecked.bind(this);
 		this.getChecked = this.getChecked.bind(this);
 	}
-
-	addIsChecked(){
-		let test = [];
-		for(let event in this.state.classes){
-			let obj = {value: this.state.classes[event], isChecked: false};
-			test.push(obj);
-			console.log(test);
-		};
-	};
 
 	mapGrutorEvents(calendarGrutorEvents){
 		var grutorClasses = calendarGrutorEvents.map((hour) => {
@@ -83,17 +74,6 @@ class App extends Component {
 				</div>
 			)
 		})
-		//  calendarGruteeEvents.map((hour) => {
-		// 	console.log(this.state.tempClassList.indexOf(hour.title));
-		// 	if(this.state.tempClassList.indexOf(hour.title) == -1){
-		// 		console.log(this.state.tempClassList.includes(hour.title), "for", hour.title);
-		// 		this.state.tempClassList.push(hour.title);
-		// 		return (
-		// 			<label>{hour.title}<input type="checkbox" value={hour.title} 
-		// 			checked ={hour.isChecked} onChange = {this.toggleClass.bind(this)}/> <br></br></label>
-		// 		)
-		// 	}});
-		console.log("made it to the end");
 		return gruteeClasses;
 	};
 
@@ -249,10 +229,9 @@ class App extends Component {
 			this.parseGruteeEventsList(grutorInfo);
 			this.setState({
 				classInfo: grutorInfo
-			}, function(){
-			})
-		})
+			} )
 	}
+}
 
 	// Helper function that parses grutorClasses obtained from Firebase into events
 	// list to be displayed on calendar
@@ -359,6 +338,7 @@ class App extends Component {
 		});
 
 	}
+
 
 
 	// function to display courses from Firebase
@@ -470,57 +450,52 @@ class App extends Component {
 
   	render() {
 	    return (
-	        <div>
+	        <div className = "wholeThing">
 	            <Row>
 	                <Navbar
 	                    logout={this.logout}
 						current_user = {this.state.current_user}
 	                />
 	            </Row>
-	            <div className="body">
-	                <Row vertical='center'>
-	                  	<Column flexGrow={1} horizontal='center'>
-		                    <h1>Class List</h1>
-							<form>
-							{this.state.classes ?
-								this.mapGruteeEvents(this.state.calendarGruteeEvents)
-								:
-								null
-							}
-							</form>
-							<h1>Grutoring List</h1>
-							<form>
-							{ this.mapGrutorEvents(this.state.calendarGrutorEvents) } 
-							</form>
-							<h5>Data passed back from adding course:</h5>
-		                    <pre id="course-info"></pre>
-							<h5>Data passed back from Firebase regarding current user's classes:</h5>
-							<pre id="firebase-classes"></pre>
-							<h5>Data passed back from Firebase regarding grutoring hours of current user's classes:</h5>
-							<pre id="firebase-classes-info">{this.state.classInfo.length === 0 ? "No information for classes" : null}</pre>
-							<h5>Data passed back from Firebase regarding current user's grutoring duties:</h5>
-							<pre id="firebase-grutorClasses"></pre>
-	                  	</Column>
-	                  	{this.state.current_user ?
-		                  	<div>
-		                      	<button onClick={this.togglePopup}>Add a class</button>
-		                  	</div>
-	                  		:
-		                  	<div>
-		                      	<p>You need to login to add classes.</p>
-		                  	</div>
-	                  	}
-	                  	<Column flexGrow={1} horizontal='center'>
-	                      	<BigCalendar
-													selectable
-								          localizer={localizer}
-								          events={(this.eventList(this.state.calendarGrutorEvents)).concat(this.eventListGrutee(this.state.calendarGruteeEvents))}
-								          defaultView={BigCalendar.Views.WEEK}
-								          defaultDate={new Date(moment())}
-	                    	/>
-	                  	</Column>
-	                </Row>
-	            </div>
+				<div className = "body" >
+	            	<div className = "classSidebar" >
+						<h1>Class List</h1>
+						<form>
+						{this.state.classes ?
+							this.mapGruteeEvents(this.state.calendarGruteeEvents)
+							:
+							null
+						}
+						</form>
+						<h1>Grutoring List</h1>
+						<form>
+						{ this.mapGrutorEvents(this.state.calendarGrutorEvents) } 
+						</form>
+						
+						{this.state.current_user ?
+							<div>
+								<button onClick={this.togglePopup}>Add a class</button>
+							</div>
+							:
+							<div>
+								<p>You need to login to add classes.</p>
+							</div>
+						}
+					</div>
+					<div className = "calendar">
+						<BigCalendar
+							showMultiDayTimes = {false}
+							selectable
+							localizer={localizer}
+							min={new Date(2018, 10, 0, 9, 0, 0)}
+   							max={new Date(2018, 10, 0, 23, 0, 0)} 
+							events={(this.eventList(this.state.calendarGrutorEvents)).concat(this.eventListGrutee(this.state.calendarGruteeEvents))}
+							defaultView={BigCalendar.Views.WEEK}
+							defaultDate={new Date(moment())}
+						/>
+					</div>
+				</div>
+				<div name = "classPopUp">
 	            {this.state.showPopup ?
 	                <ClassPopUp
 	                    courses = {this.state.scrapedCourses}
@@ -528,7 +503,8 @@ class App extends Component {
 	                    addCourse = {(course) => {this.addCourse(course)}}/>
 	                :
 	                null
-	            }
+				}
+				</div>
 	        </div>
 	  	);
 	}
