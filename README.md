@@ -12,4 +12,5 @@ Grutoring Calender seeks to consolidate the information of grutoring/Office Hour
 4. react-big-calendar
 5. react-tackle-box
 6. firebase
+7. moment-recur
 

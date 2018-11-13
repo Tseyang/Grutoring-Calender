@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import './css/navbar.css'
 
-import firebase,  { auth, provider } from "./firebase.js"
+import { auth, provider } from "./firebase.js"
 
 class Navbar extends Component{
 
     constructor(props){
         super(props);
         this.state = {
-            current_user: props
+            current_user: props.current_user,
         };
         this.login = this.login.bind(this);
         this.logout = this.logout.bind(this);
