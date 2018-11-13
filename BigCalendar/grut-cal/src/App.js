@@ -62,22 +62,30 @@ class App extends Component {
 		this.getGrutoringInfo = this.getGrutoringInfo.bind(this);
 		this.displayData = this.displayData.bind(this);
 		this.mapGruteeEvents = this.mapGruteeEvents.bind(this);
+		this.mapEvents = this.mapEvents.bind(this);
 		this.getChecked = this.getChecked.bind(this);
 	}
 
-	mapGrutorEvents(calendarGrutorEvents){
-		var grutorClasses = calendarGrutorEvents.map((hour) => {
-		return (
-		  <label>{hour.title}<input type="checkbox" value=
-		  {hour.title} checked ={hour.isChecked} onChange = {this.toggleClass.bind(this)}/> <br></br></label>)});
-		return grutorClasses};
+	// mapGrutorEvents(){
+	// 	var grutorClasses = this.state.grutorClasses.map((grutClass) => {
+	// 		return(
+	// 			<div key={grutClass.value}>
+	// 				<label>{grutClass.value}<input type="checkbox" value={grutClass.value}
+	// 				checked ={grutClass.isChecked} onChange = {this.toggleGruteeClass.bind(this)}/> <br></br></label>
+	// 				<button key={grutClass.value+"_button"} value={grutClass.value} onClick={this.removeClass}>Remove class</button>
+	// 			</div>
+	// 		)
+	// 	})
+	// 	return grutorClasses
+	// };
 
-	mapGruteeEvents(){
-		var gruteeClasses = this.state.classes.map((enrolledClass) => {
+	mapEvents(classType){
+		var gruteeClasses = classType.map((enrolledClass) => {
 			return(
 				<div key={enrolledClass.value}>
 					<label>{enrolledClass.value}<input type="checkbox" value={enrolledClass.value}
-					checked ={enrolledClass.isChecked} onChange = {this.toggleGruteeClass.bind(this)}/> <br></br></label>
+					checked ={enrolledClass.isChecked} 
+					onChange = {(classType == this.state.classes) ? this.toggleGruteeClass.bind(this) : this.toggleGrutorClass.bind(this)}/> <br></br></label>
 					<button key={enrolledClass.value+"_button"} value={enrolledClass.value} onClick={this.removeClass}>Remove class</button>
 				</div>
 			)
@@ -86,11 +94,11 @@ class App extends Component {
 	};
 
 
-	toggleClass(event) {
+	toggleGrutorClass(event) {
 		const title = event.target.value;
-		for(let entry in this.state.calendarGrutorEvents){
-			if (this.state.calendarGrutorEvents[entry].title === title){
-				this.state.calendarGrutorEvents[entry].isChecked = !(this.state.calendarGrutorEvents[entry].isChecked);
+		for(let entry in this.state.grutorClasses){
+			if (this.state.grutorClasses[entry].value == title){
+				this.state.grutorClasses[entry].isChecked = !(this.state.grutorClasses[entry].isChecked);
 			}
 		}
 		this.setState({calendarGrutorEvents: this.state.calendarGrutorEvents})
@@ -108,18 +116,25 @@ class App extends Component {
 
 	eventList(calendarGrutorEvents){
 		var newEvents = calendarGrutorEvents.filter(attr => {
-		  return attr.isChecked === true;
+			return this.getCheckedGrutor(attr.title) === true;
 		});
-			// console.log("CalendarGrutorEvents");
-			// console.log(this.state.calendarGrutorEvents);
-		  return newEvents
-
-		  };
+			return newEvents
+	
+			};
 
 	getChecked(className){
 		for(let entry in this.state.classes){
 			if(this.state.classes[entry].value == className){
 				return this.state.classes[entry].isChecked
+			}
+		}
+		return false;
+	}
+
+	getCheckedGrutor(className){
+		for(let entry in this.state.grutorClasses){
+			if(this.state.grutorClasses[entry].value == className){
+				return this.state.grutorClasses[entry].isChecked
 			}
 		}
 		return false;
@@ -434,9 +449,14 @@ class App extends Component {
 					let obj = {value: enrolledClasses[event], isChecked: false};
 					withCheck.push(obj);
 				};
+				let withCheckGrutor = [];
+				for(let event in grutorClasses){
+					let obj = {value: Object.keys(grutorClasses[event])[0], isChecked: false};
+					withCheckGrutor.push(obj);
+				};
 				this.setState({
 					classes: withCheck,
-					grutorClasses: grutorClasses
+					grutorClasses: withCheckGrutor
 				})
 			})
 		}
@@ -510,14 +530,14 @@ class App extends Component {
 						<h1>Class List</h1>
 						<form>
 						{this.state.classes ?
-							this.mapGruteeEvents(this.state.calendarGruteeEvents)
+							this.mapEvents(this.state.classes)
 							:
 							null
 						}
 						</form>
 						<h1>Grutoring List</h1>
 						<form>
-						{ this.mapGrutorEvents(this.state.calendarGrutorEvents) }
+						{ this.mapEvents(this.state.grutorClasses) }
 						</form>
 
 						{this.state.current_user ?
@@ -535,11 +555,17 @@ class App extends Component {
 							showMultiDayTimes = {false}
 							selectable
 							localizer={localizer}
-							min={new Date(2018, 10, 0, 9, 0, 0)}
-   							max={new Date(2018, 10, 0, 23, 0, 0)}
+							
 							events={(this.eventList(this.state.calendarGrutorEvents)).concat(this.eventListGrutee(this.state.calendarGruteeEvents))}
 							defaultView={BigCalendar.Views.WEEK}
 							defaultDate={new Date(moment())}
+
+							
+							min = {new Date(moment('2018-05-17-2018 9:00', 'YYYY-MM-DD HH:mm'))}
+							
+
+							// min={new Date(2018, 10, 0, 9, 0, 0)}
+   							// max={new Date(2018, 10, 0, 23, 0, 0)}
 						/>
 					</div>
 				</div>
