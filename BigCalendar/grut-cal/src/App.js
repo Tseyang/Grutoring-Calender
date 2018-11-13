@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import BigCalendar from 'react-big-calendar';
 import moment from 'moment';
+import 'moment-recur';
 import { Column, Row } from 'simple-flexbox';
 import {Checkbox, CheckboxGroup} from 'react-checkbox-group';
 
@@ -18,6 +19,13 @@ import './css/react-big-calendar.css';
 const localizer = BigCalendar.momentLocalizer(moment)
 const classesRef = firebase.database().ref("Classes");
 const usersRef = firebase.database().ref("Users");
+
+// Initialize start dates and end dates for grutor/grutee events
+// const start_date = new Date(moment('2018-09-01', 'YYYY-MM-DD'));
+// const end_date = new Date(moment('2018-09-20', 'YYYY-MM-DD'));
+const START_DATE_FALL = "09/01/2018";
+const END_DATE_FALL = "12/20/2018";
+const NUM_RECCURING_EVENTS = 16;
 
 class App extends Component {
 	constructor(props) {
@@ -68,7 +76,7 @@ class App extends Component {
 		var gruteeClasses = this.state.classes.map((enrolledClass) => {
 			return(
 				<div key={enrolledClass.value}>
-					<label>{enrolledClass.value}<input type="checkbox" value={enrolledClass.value} 
+					<label>{enrolledClass.value}<input type="checkbox" value={enrolledClass.value}
 					checked ={enrolledClass.isChecked} onChange = {this.toggleGruteeClass.bind(this)}/> <br></br></label>
 					<button key={enrolledClass.value+"_button"} value={enrolledClass.value} onClick={this.removeClass}>Remove class</button>
 				</div>
@@ -77,7 +85,7 @@ class App extends Component {
 		return gruteeClasses;
 	};
 
-	
+
 	toggleClass(event) {
 		const title = event.target.value;
 		for(let entry in this.state.calendarGrutorEvents){
@@ -102,10 +110,12 @@ class App extends Component {
 		var newEvents = calendarGrutorEvents.filter(attr => {
 		  return attr.isChecked === true;
 		});
+			// console.log("CalendarGrutorEvents");
+			// console.log(this.state.calendarGrutorEvents);
 		  return newEvents
-		  
+
 		  };
-	
+
 	getChecked(className){
 		for(let entry in this.state.classes){
 			if(this.state.classes[entry].value == className){
@@ -120,7 +130,7 @@ class App extends Component {
 		return this.getChecked(attr.title) === true;
 	});
 		return newEvents
-		
+
 		};
 
 	constructFirebaseEntry(json, grutor){
@@ -244,7 +254,7 @@ class App extends Component {
 		var isChecked = "";
 
 		// Initiliaze variables that have to be stored for parsing
-		var startDate = "";
+		var day = "";
 		var startTime = "";
 		var dateTimeStringStart = "";
 		var endDate = "";
@@ -252,37 +262,62 @@ class App extends Component {
 		var dateTimeStringEnd = "";
 		var tempEvents = [];
 
+		// console.log("START DATE");
+		// console.log(START_DATE_FALL);
+		// var recurring_date = moment(START_DATE_FALL).recur(END_DATE_FALL).every("Monday").daysOfWeek();
+		// console.log(recurring_date.matches("2018-09-03"));
+		// console.log(recurring_date.next(16));
+
+
 		// Iterate through every {} object in grutorInfo
 		for(var i = 0; i < grutorClasses.length; i++) {
-			var currentGrutorClassPropsObject = grutorClasses[i];
 			// parse title from grutorClasses list
 			title = Object.keys(grutorClasses[i])[0];
 
-			//parse start date and time from grutorClasses list
-			startDate = Object.values(Object.values(grutorClasses[i])[0])[2];
+			//parse start time from grutorClasses list
 			startTime = Object.values(Object.values(grutorClasses[i])[0])[3];
-			dateTimeStringStart = startDate + " " + startTime;
-			start = new Date(moment(dateTimeStringStart, 'YYYY-MM-DD HH:mm'));
 
-			// parse end date and time from grutorClasses list
-			endDate = Object.values(Object.values(grutorClasses[i])[0])[2];
-			endTime = Object.values(Object.values(grutorClasses[i])[0])[0];
-			dateTimeStringEnd = endDate + " " + endTime;
-			end = new Date(moment(dateTimeStringEnd, 'YYYY-MM-DD HH:mm'));
+			//parse end time from grutorClasses list
+			endTime = Object.values(Object.values(grutorClasses[i])[0])[1];
 
-			isChecked = false;
-			var obj = {
-				title,
-				start,
-				end,
-				isChecked
+			//parse day of grutor event from grutorClasses list
+			day = Object.values(Object.values(grutorClasses[i])[0])[0];
+
+			// Generate list of recurring events based on the input day
+			var recur = moment(START_DATE_FALL).recur(END_DATE_FALL).every(day).daysOfWeek();
+			var listRecurringDates = recur.next(NUM_RECCURING_EVENTS);
+
+			// Iterate to populate recurring events
+			for (var j = 0; j < NUM_RECCURING_EVENTS; j++) {
+
+				// extract the current event date (moment object)
+				var currentEventDate = listRecurringDates[j];
+				var currentDateString = currentEventDate.format('YYYY-MM-DD');
+				var dateTimeStringStart = currentDateString + " " + startTime;
+				var dateTimeStringEnd = currentDateString + " " + endTime;
+
+				// Update the start and end fields of the event
+				start = new Date(moment(dateTimeStringStart, 'YYYY-MM-DD HH:mm'));
+				end = new Date(moment(dateTimeStringEnd, 'YYYY-MM-DD HH:mm'));
+
+				isChecked = false;
+
+				var obj = {
+					title,
+					start,
+					end,
+					isChecked
+				}
+				tempEvents.push(obj)
 			}
-			tempEvents.push(obj)
-			this.setState({
-				calendarGrutorEvents: tempEvents});
-			// Now we update the current state to reflect changes in events displayed
-			// on the calendar
 		}
+
+		// Now we update the current state to reflect changes in events displayed
+		// on the calendar
+		this.setState({
+			calendarGrutorEvents: tempEvents
+		});
+
 	}
 
 	parseGruteeEventsList(classInfo) {
@@ -294,7 +329,7 @@ class App extends Component {
 		var isChecked = "";
 
 		// Initiliaze variables that have to be stored for parsing
-		var startDate = "";
+		var day = "";
 		var startTime = "";
 		var dateTimeStringStart = "";
 		var endDate = "";
@@ -302,34 +337,49 @@ class App extends Component {
 		var dateTimeStringEnd = "";
 		var tempEventsList = [];
 
-		// Iterate through every {} object in grutorInfo
+		// Iterate through every {} object in classInfo
 		for(var i = 0; i < classInfo.length; i++) {
-			var currentGrutorClassPropsObject = classInfo[i];
+
 			// parse title from grutorClasses list
 			title = Object.keys(classInfo[i])[0];
 
-			//parse start date and time from grutorClasses list
-			startDate = Object.values(Object.values(classInfo[i])[0])[2];
+			//parse start time from classInfo list
 			startTime = Object.values(Object.values(classInfo[i])[0])[3];
-			dateTimeStringStart = startDate + " " + startTime;
-			start = new Date(moment(dateTimeStringStart, 'YYYY-MM-DD HH:mm'));
 
-			// parse end date and time from grutorClasses list
-			endDate = Object.values(Object.values(classInfo[i])[0])[2];
-			endTime = Object.values(Object.values(classInfo[i])[0])[0];
-			dateTimeStringEnd = endDate + " " + endTime;
-			end = new Date(moment(dateTimeStringEnd, 'YYYY-MM-DD HH:mm'));
-			isChecked = false;
+			//parse end time from classInfo list
+			endTime = Object.values(Object.values(classInfo[i])[0])[1];
 
-			var obj = {
-				title,
-				start,
-				end,
-				isChecked
-			};
+			//parse day of grutee event from classInfo list
+			day = Object.values(Object.values(classInfo[i])[0])[0];
 
-			tempEventsList.push(obj);
+			// Generate list of recurring events based on the input day
+			var recur = moment(START_DATE_FALL).recur(END_DATE_FALL).every(day).daysOfWeek();
+			var listRecurringDates = recur.next(NUM_RECCURING_EVENTS);
+
+			// Iterate to populate recurring events
+			for (var j = 0; j < NUM_RECCURING_EVENTS; j++) {
+
+				// extract the current event date (moment object)
+				var currentEventDate = listRecurringDates[j];
+				var currentDateString = currentEventDate.format('YYYY-MM-DD');
+				var dateTimeStringStart = currentDateString + " " + startTime;
+				var dateTimeStringEnd = currentDateString + " " + endTime;
+
+				// Update the start and end fields of the event
+				start = new Date(moment(dateTimeStringStart, 'YYYY-MM-DD HH:mm'));
+				end = new Date(moment(dateTimeStringEnd, 'YYYY-MM-DD HH:mm'));
+
+				isChecked = false;
+
+				var obj = {
+					title,
+					start,
+					end,
+					isChecked
+				}
+				tempEventsList.push(obj)
 			}
+		}
 
 		// Now we update the current state to reflect changes in events displayed
 		// on the calendar
@@ -387,8 +437,6 @@ class App extends Component {
 				this.setState({
 					classes: withCheck,
 					grutorClasses: grutorClasses
-				}, function(){
-					
 				})
 			})
 		}
@@ -469,9 +517,9 @@ class App extends Component {
 						</form>
 						<h1>Grutoring List</h1>
 						<form>
-						{ this.mapGrutorEvents(this.state.calendarGrutorEvents) } 
+						{ this.mapGrutorEvents(this.state.calendarGrutorEvents) }
 						</form>
-						
+
 						{this.state.current_user ?
 							<div>
 								<button onClick={this.togglePopup}>Add a class</button>
@@ -488,7 +536,7 @@ class App extends Component {
 							selectable
 							localizer={localizer}
 							min={new Date(2018, 10, 0, 9, 0, 0)}
-   							max={new Date(2018, 10, 0, 23, 0, 0)} 
+   							max={new Date(2018, 10, 0, 23, 0, 0)}
 							events={(this.eventList(this.state.calendarGrutorEvents)).concat(this.eventListGrutee(this.state.calendarGruteeEvents))}
 							defaultView={BigCalendar.Views.WEEK}
 							defaultDate={new Date(moment())}
