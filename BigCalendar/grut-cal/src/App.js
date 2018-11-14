@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import BigCalendar from 'react-big-calendar';
 import moment from 'moment';
+import 'moment-recur';
 import { Column, Row } from 'simple-flexbox';
 import {Checkbox, CheckboxGroup} from 'react-checkbox-group';
 
@@ -11,12 +12,20 @@ import ClassPopUp from './AddClassPopUp';
 
 import ScrapedCourses from "./courses.js";
 
-import './css/App.css';
+import './css/App.css'
+import './css/class-panel.css';
 import './css/react-big-calendar.css';
 
 const localizer = BigCalendar.momentLocalizer(moment)
 const classesRef = firebase.database().ref("Classes");
 const usersRef = firebase.database().ref("Users");
+
+// Initialize start dates and end dates for grutor/grutee events
+// const start_date = new Date(moment('2018-09-01', 'YYYY-MM-DD'));
+// const end_date = new Date(moment('2018-09-20', 'YYYY-MM-DD'));
+const START_DATE_FALL = "09/01/2018";
+const END_DATE_FALL = "12/20/2018";
+const NUM_RECCURING_EVENTS = 16;
 
 class App extends Component {
 	constructor(props) {
@@ -28,7 +37,10 @@ class App extends Component {
 			grutorClasses: [], // info about classes that user GRUTORS
 		    showPopup: false,
 		    scrapedCourses: [],
-			usersSnapshot: null
+			usersSnapshot: null,
+			courses: [],
+			calendarGruteeEvents: [], // events display format of grutee events
+			calendarGrutorEvents: [] // events display format of grutor events
 		};
 		// logic for using offline json document for course listings
 		var HMcourses = ScrapedCourses["courses"];
@@ -48,13 +60,97 @@ class App extends Component {
 		this.setCourses = this.setCourses.bind(this);
 		this.removeCourse = this.removeCourse.bind(this);
 		this.getGrutoringInfo = this.getGrutoringInfo.bind(this);
+		this.mapEvents = this.mapEvents.bind(this);
+		this.getChecked = this.getChecked.bind(this);
 	}
+
+	// mapGrutorEvents(){
+	// 	var grutorClasses = this.state.grutorClasses.map((grutClass) => {
+	// 		return(
+	// 			<div key={grutClass.value}>
+	// 				<label>{grutClass.value}<input type="checkbox" value={grutClass.value}
+	// 				checked ={grutClass.isChecked} onChange = {this.toggleGruteeClass.bind(this)}/> <br></br></label>
+	// 				<button key={grutClass.value+"_button"} value={grutClass.value} onClick={this.removeClass}>Remove class</button>
+	// 			</div>
+	// 		)
+	// 	})
+	// 	return grutorClasses
+	// };
+
+	mapEvents(classType){
+		var gruteeClasses = classType.map((enrolledClass) => {
+			return(
+				<div key={enrolledClass.value}>
+					<label>{enrolledClass.value}<input type="checkbox" value={enrolledClass.value}
+					checked ={enrolledClass.isChecked} 
+					onChange = {(classType == this.state.classes) ? this.toggleGruteeClass.bind(this) : this.toggleGrutorClass.bind(this)}/> <br></br></label>
+					<button key={enrolledClass.value+"_button"} value={enrolledClass.value} 
+					onClick={(classType == this.state.classes) ? () => this.removeCourse(enrolledClass.value,false) : () => this.removeCourse(enrolledClass.value,true)}>Remove class</button>
+				</div>
+			)
+		})
+		return gruteeClasses;
+	};
+
+
+	toggleGrutorClass(event) {
+		const title = event.target.value;
+		for(let entry in this.state.grutorClasses){
+			if (this.state.grutorClasses[entry].value == title){
+				this.state.grutorClasses[entry].isChecked = !(this.state.grutorClasses[entry].isChecked);
+			}
+		}
+		this.setState({calendarGrutorEvents: this.state.calendarGrutorEvents})
+	}
+
+	toggleGruteeClass(event) {
+		const title = event.target.value;
+		for(let entry in this.state.classes){
+			if (this.state.classes[entry].value == title){
+				this.state.classes[entry].isChecked = !(this.state.classes[entry].isChecked);
+			}
+		}
+		this.setState({calendarGruteeEvents: this.state.calendarGruteeEvents})
+	}
+
+	eventList(calendarGrutorEvents){
+		var newEvents = calendarGrutorEvents.filter(attr => {
+			return this.getCheckedGrutor(attr.title) === true;
+		});
+			return newEvents
+	
+			};
+
+	getChecked(className){
+		for(let entry in this.state.classes){
+			if(this.state.classes[entry].value == className){
+				return this.state.classes[entry].isChecked
+			}
+		}
+		return false;
+	}
+
+	getCheckedGrutor(className){
+		for(let entry in this.state.grutorClasses){
+			if(this.state.grutorClasses[entry].value == className){
+				return this.state.grutorClasses[entry].isChecked
+			}
+		}
+		return false;
+	}
+
+	eventListGrutee(calendarGruteeEvents){
+	var newEvents = calendarGruteeEvents.filter(attr => {
+		return this.getChecked(attr.title) === true;
+	});
+		return newEvents
+
+		};
 
 	constructFirebaseEntry(json, grutor){
 		// function to construct Firebase course entry
 		var name = json["course"].substr(0, json["course"].indexOf(" "));
 		var course = {};
-		console.log(json)
 		if(grutor){
 			// grutor logic
 			course[name] = {
@@ -153,12 +249,161 @@ class App extends Component {
 				grutorInfo = [];
 			}
 			// set state whenever snapshot changes
+			
+			this.parseGruteeEventsList(grutorInfo);
 			this.setState({
 				classInfo: grutorInfo
-			}, function(){
-			})
+			} )
 		})
 	}
+
+
+	// Helper function that parses grutorClasses obtained from Firebase into events
+	// list to be displayed on calendar
+	parseGrutorEventsList(grutorClasses) {
+
+		// Initialize variable that events object uses
+		var title = "";
+		var start = "";
+		var end = "";
+		var isChecked = "";
+
+		// Initiliaze variables that have to be stored for parsing
+		var day = "";
+		var startTime = "";
+		var dateTimeStringStart = "";
+		var endDate = "";
+		var endTime = "";
+		var dateTimeStringEnd = "";
+		var tempEvents = [];
+
+		// console.log("START DATE");
+		// console.log(START_DATE_FALL);
+		// var recurring_date = moment(START_DATE_FALL).recur(END_DATE_FALL).every("Monday").daysOfWeek();
+		// console.log(recurring_date.matches("2018-09-03"));
+		// console.log(recurring_date.next(16));
+
+
+		// Iterate through every {} object in grutorInfo
+		for(var i = 0; i < grutorClasses.length; i++) {
+			// parse title from grutorClasses list
+			title = Object.keys(grutorClasses[i])[0];
+
+			//parse start time from grutorClasses list
+			startTime = Object.values(Object.values(grutorClasses[i])[0])[3];
+
+			//parse end time from grutorClasses list
+			endTime = Object.values(Object.values(grutorClasses[i])[0])[1];
+
+			//parse day of grutor event from grutorClasses list
+			day = Object.values(Object.values(grutorClasses[i])[0])[0];
+
+			// Generate list of recurring events based on the input day
+			var recur = moment(START_DATE_FALL).recur(END_DATE_FALL).every(day).daysOfWeek();
+			var listRecurringDates = recur.next(NUM_RECCURING_EVENTS);
+
+			// Iterate to populate recurring events
+			for (var j = 0; j < NUM_RECCURING_EVENTS; j++) {
+
+				// extract the current event date (moment object)
+				var currentEventDate = listRecurringDates[j];
+				var currentDateString = currentEventDate.format('YYYY-MM-DD');
+				var dateTimeStringStart = currentDateString + " " + startTime;
+				var dateTimeStringEnd = currentDateString + " " + endTime;
+
+				// Update the start and end fields of the event
+				start = new Date(moment(dateTimeStringStart, 'YYYY-MM-DD HH:mm'));
+				end = new Date(moment(dateTimeStringEnd, 'YYYY-MM-DD HH:mm'));
+
+				isChecked = false;
+
+				var obj = {
+					title,
+					start,
+					end,
+					isChecked
+				}
+				tempEvents.push(obj)
+			}
+		}
+
+		// Now we update the current state to reflect changes in events displayed
+		// on the calendar
+		this.setState({
+			calendarGrutorEvents: tempEvents
+		});
+
+	}
+
+	parseGruteeEventsList(classInfo) {
+
+		// Initialize variable that events object uses
+		var title = "";
+		var start = "";
+		var end = "";
+		var isChecked = "";
+
+		// Initiliaze variables that have to be stored for parsing
+		var day = "";
+		var startTime = "";
+		var dateTimeStringStart = "";
+		var endDate = "";
+		var endTime = "";
+		var dateTimeStringEnd = "";
+		var tempEventsList = [];
+
+		// Iterate through every {} object in classInfo
+		for(var i = 0; i < classInfo.length; i++) {
+
+			// parse title from grutorClasses list
+			title = Object.keys(classInfo[i])[0];
+
+			//parse start time from classInfo list
+			startTime = Object.values(Object.values(classInfo[i])[0])[3];
+
+			//parse end time from classInfo list
+			endTime = Object.values(Object.values(classInfo[i])[0])[1];
+
+			//parse day of grutee event from classInfo list
+			day = Object.values(Object.values(classInfo[i])[0])[0];
+
+			// Generate list of recurring events based on the input day
+			var recur = moment(START_DATE_FALL).recur(END_DATE_FALL).every(day).daysOfWeek();
+			var listRecurringDates = recur.next(NUM_RECCURING_EVENTS);
+
+			// Iterate to populate recurring events
+			for (var j = 0; j < NUM_RECCURING_EVENTS; j++) {
+
+				// extract the current event date (moment object)
+				var currentEventDate = listRecurringDates[j];
+				var currentDateString = currentEventDate.format('YYYY-MM-DD');
+				var dateTimeStringStart = currentDateString + " " + startTime;
+				var dateTimeStringEnd = currentDateString + " " + endTime;
+
+				// Update the start and end fields of the event
+				start = new Date(moment(dateTimeStringStart, 'YYYY-MM-DD HH:mm'));
+				end = new Date(moment(dateTimeStringEnd, 'YYYY-MM-DD HH:mm'));
+
+				isChecked = false;
+
+				var obj = {
+					title,
+					start,
+					end,
+					isChecked
+				}
+				tempEventsList.push(obj)
+			}
+		}
+
+		// Now we update the current state to reflect changes in events displayed
+		// on the calendar
+		this.setState({
+			calendarGruteeEvents: tempEventsList
+		});
+
+	}
+
 
 
 	// function to display courses from Firebase
@@ -178,7 +423,7 @@ class App extends Component {
 			// get snapshot of user's entry in Firebase
 			userRef.on('value', (snapshot) => {
 				var enrolledClasses = [];
-				var grutoringClasses = [];
+				var grutorClasses = [];
 				if(snapshot.exists()){
 					// get classes for this user
 					if(snapshot.hasChild("classes")){
@@ -193,16 +438,25 @@ class App extends Component {
 						for(let grutorClass in data){
 							var obj = {};
 							obj[grutorClass] = data[grutorClass];
-							grutoringClasses.push(obj);
+							grutorClasses.push(obj);
 						}
 					}
 				}
-				// set state whenever snapshot changes
+				// Parse event title, startTime, and endTime for calendar display
+				this.parseGrutorEventsList(grutorClasses);
+				let withCheck = [];
+				for(let event in enrolledClasses){
+					let obj = {value: enrolledClasses[event], isChecked: false};
+					withCheck.push(obj);
+				};
+				let withCheckGrutor = [];
+				for(let event in grutorClasses){
+					let obj = {value: Object.keys(grutorClasses[event])[0], isChecked: false};
+					withCheckGrutor.push(obj);
+				};
 				this.setState({
-					classes: enrolledClasses,
-					grutorClasses: grutoringClasses
-				}, function(){
-					
+					classes: withCheck,
+					grutorClasses: withCheckGrutor
 				})
 			})
 		}
@@ -217,23 +471,51 @@ class App extends Component {
       	});
   	}
 
-	// runs whenever component mounts
+	displayData() {
+	var userData = this.state.testState.map((item) => {
+		return (
+			<li key={item.id}>{item.classes[0]}
+			</li>
+		)});
+	return userData;
+	}
+
   	componentDidMount(){
     	auth.onAuthStateChanged((user) => {
       	if(user){
+			const usersRef = firebase.database().ref("Users"); 
+			usersRef.once('value', (snapshot) => {
+				console.log(snapshot.val());
+				let items = snapshot.val();
+    			let newState = [];
+    			for (let item in items) {
+					newState.push({
+						id: item,
+						class: items[item].classes,
+						grutorClassses: items[item].grutorClasses
+					});
+				}
           	this.setState({
               	current_user: user,
           	}, this.setCourses);
-      	}
-    	});
-  	}
+		  })
+		}
+	})
+}
+  	
 
 	// toggles the display of the add course overlay
   	togglePopup(){
     	this.setState({
         	showPopup: !this.state.showPopup
     	});
-  	}
+  	};
+
+	// function for removing course from Firebase
+	removeClass(courseCode){
+		// TODO: Implement functionality for removing class from Firebase on button click
+		alert("Remove class functionality yet to be implemented");
+	}
 
 	// function for removing course from Firebase
 	removeCourse(courseCode,isGrutor){
@@ -251,90 +533,72 @@ class App extends Component {
 		}
 		else{
 			const userRef = firebase.database().ref(`/Users/${this.state.current_user.displayName}/classes/${courseCode}`);
+			console.log("Remove grutee succeeded.")
 			userRef.remove();
 		}
 	}
 
   	render() {
 	    return (
-	        <div>
+	        <div className = "wholeThing">
 	            <Row>
 	                <Navbar
 	                    logout={this.logout}
 						current_user = {this.state.current_user}
 	                />
 	            </Row>
-	            <div className="body">
-	                <Row vertical='center'>
-	                  	<Column flexGrow={1} horizontal='center'>
-							{this.state.current_user ?
+				<div className = "body" >
+	            	<div className = "classSidebar" >
+						<h1>Class List</h1>
+						<form>
+						{this.state.current_user ?
+							this.mapEvents(this.state.classes)
+							:
+							null
+						}
+						</form>
+						<h1>Grutoring List</h1>
+						<form>
+						{this.state.current_user ?
+							this.mapEvents(this.state.grutorClasses)
+							:
+							null
+						}
+						</form>
+
+						{this.state.current_user ?
 							<div>
-								<h1>Class List</h1>
-								{this.state.classes ?
-									<CheckboxGroup
-				                      	checkboxDepth={3} // This is needed to optimize the checkbox group
-				                      	id="enrolledClasses"
-				                      	value={this.state.classes}
-				                      	onChange={this.classesChanged}>
-										{this.state.classes.map((enrolledClass) => {
-											return(
-												<div key={enrolledClass}>
-													<label key={enrolledClass}><Checkbox value={enrolledClass} key={enrolledClass}/>{enrolledClass}<br></br></label>
-													<button onClick={() => this.removeCourse(enrolledClass,false)}>Remove class</button>
-												</div>
-											)
-										})}
-				                    </CheckboxGroup>
-									:
-									null
-								}
-								<h1>Grutoring List</h1>
-								{this.state.grutorClasses ?
-									<CheckboxGroup
-				                      	checkboxDepth={3} // This is needed to optimize the checkbox group
-				                      	id="grutorClasses"
-				                      	value={this.state.grutorClasses}
-				                      	onChange={this.classesChanged}>
-										{this.state.grutorClasses.map((grutorClass) => {
-											var classCode = Object.keys(grutorClass)[0];
-											return(
-												<div key={classCode}>
-													<label key={classCode}><Checkbox value={classCode} key={classCode}/>{classCode}<br></br></label>
-													<button onClick={() => this.removeCourse(classCode,true)}>Remove class</button>
-												</div>
-											)
-										})}
-				                    </CheckboxGroup>
-									:
-									null
-								}
+								<button onClick={this.togglePopup}>Add a class</button>
 							</div>
 							:
 							<div>
-								<h1>No classes for a non-logged in user.</h1>
+								<p>You need to login to add classes.</p>
 							</div>
+						}
+					</div>
+					<div className = "calendar">
+						<BigCalendar
+							selectable
+							localizer={localizer}
+							
+							events={this.state.current_user ?
+								this.eventList(this.state.calendarGrutorEvents).concat(this.eventListGrutee(this.state.calendarGruteeEvents))
+								:
+								[]
 							}
-			
-	                  	</Column>
-	                  	{this.state.current_user ?
-		                  	<div>
-		                      	<button onClick={this.togglePopup}>Add a class</button>
-		                  	</div>
-	                  		:
-		                  	<div>
-		                      	<p>You need to login to add classes.</p>
-		                  	</div>
-	                  	}
-	                  	<Column flexGrow={1} horizontal='center'>
-	                      	<BigCalendar
-	                      	localizer={localizer}
-	                      	events={[]}
-	                      	startAccessor="startDate"
-	                      	endAccessor="endDate"
-	                    	/>
-	                  	</Column>
-	                </Row>
-	            </div>
+							defaultView={BigCalendar.Views.WEEK}
+							defaultDate={new Date(moment())}
+
+							
+							min = {new Date(moment('2018-05-17-2018 9:00', 'YYYY-MM-DD HH:mm'))}
+							
+
+							// min={new Date(2018, 10, 0, 9, 0, 0)}
+   							// max={new Date(2018, 10, 0, 23, 0, 0)}
+						/>
+					</div>
+				</div>
+				<div name = "classPopUp">
 	            {this.state.showPopup ?
 	                <ClassPopUp
 	                    courses = {this.state.scrapedCourses}
@@ -342,7 +606,8 @@ class App extends Component {
 	                    addCourse = {(course) => {this.addCourse(course)}}/>
 	                :
 	                null
-	            }
+				}
+				</div>
 	        </div>
 	  	);
 	}
