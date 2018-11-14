@@ -84,7 +84,8 @@ class App extends Component {
 					<label>{enrolledClass.value}<input type="checkbox" value={enrolledClass.value}
 					checked ={enrolledClass.isChecked} 
 					onChange = {(classType == this.state.classes) ? this.toggleGruteeClass.bind(this) : this.toggleGrutorClass.bind(this)}/> <br></br></label>
-					<button key={enrolledClass.value+"_button"} value={enrolledClass.value} onClick={this.removeClass}>Remove class</button>
+					<button key={enrolledClass.value+"_button"} value={enrolledClass.value} 
+					onClick={(classType == this.state.classes) ? () => this.removeCourse(enrolledClass.value,false) : () => this.removeCourse(enrolledClass.value,true)}>Remove class</button>
 				</div>
 			)
 		})
@@ -497,9 +498,10 @@ class App extends Component {
           	this.setState({
               	current_user: user,
           	}, this.setCourses);
-		  }
-		})
-    	}
+		  })
+		}
+	})
+}
   	
 
 	// toggles the display of the add course overlay
@@ -531,6 +533,7 @@ class App extends Component {
 		}
 		else{
 			const userRef = firebase.database().ref(`/Users/${this.state.current_user.displayName}/classes/${courseCode}`);
+			console.log("Remove grutee succeeded.")
 			userRef.remove();
 		}
 	}
@@ -575,11 +578,14 @@ class App extends Component {
 					</div>
 					<div className = "calendar">
 						<BigCalendar
-							showMultiDayTimes = {false}
 							selectable
 							localizer={localizer}
 							
-							events={(this.eventList(this.state.calendarGrutorEvents)).concat(this.eventListGrutee(this.state.calendarGruteeEvents))}
+							events={this.state.current_user ?
+								this.eventList(this.state.calendarGrutorEvents).concat(this.eventListGrutee(this.state.calendarGruteeEvents))
+								:
+								[]
+							}
 							defaultView={BigCalendar.Views.WEEK}
 							defaultDate={new Date(moment())}
 

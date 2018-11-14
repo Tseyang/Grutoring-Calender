@@ -207,7 +207,7 @@ button.rbc-input::-moz-focus-inner {
   box-shadow: none;
   margin: 0;
   padding: 5px 5px;
-  background-color: #d610f0;
+  background-color: #0f7cdb;
   border-radius: 5px;
   color: #fff;
   cursor: pointer;
@@ -483,7 +483,7 @@ button.rbc-input::-moz-focus-inner {
   right: 0;
 }
 .rbc-day-slot .rbc-event { /* Event box border */
-  border: 1px solid #74f56f;
+  border: 1px solid #0076fd;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
