@@ -44,9 +44,15 @@ class App extends Component {
 		};
 		// logic for using offline json document for course listings
 		var HMcourses = ScrapedCourses["courses"];
+		var seenCourses = new Set()
 		for(let course in HMcourses){
 		    var curr_course = HMcourses[course];
-		    this.state.scrapedCourses.push(curr_course);
+			var courseCodeRaw = HMcourses[course]["course_code"];
+			var courseCode = courseCodeRaw.substr(0, courseCodeRaw.lastIndexOf(" "))
+			if(!seenCourses.has(courseCode)){
+				this.state.scrapedCourses.push(curr_course);
+				seenCourses.add(courseCode);
+			}
 		}
 
 		// capture users Table
@@ -82,9 +88,9 @@ class App extends Component {
 			return(
 				<div key={enrolledClass.value}>
 					<label>{enrolledClass.value}<input type="checkbox" value={enrolledClass.value}
-					checked ={enrolledClass.isChecked} 
+					checked ={enrolledClass.isChecked}
 					onChange = {(classType == this.state.classes) ? this.toggleGruteeClass.bind(this) : this.toggleGrutorClass.bind(this)}/> <br></br></label>
-					<button key={enrolledClass.value+"_button"} value={enrolledClass.value} 
+					<button key={enrolledClass.value+"_button"} value={enrolledClass.value}
 					onClick={(classType == this.state.classes) ? () => this.removeCourse(enrolledClass.value,false) : () => this.removeCourse(enrolledClass.value,true)}>Remove class</button>
 				</div>
 			)
@@ -118,7 +124,7 @@ class App extends Component {
 			return this.getCheckedGrutor(attr.title) === true;
 		});
 			return newEvents
-	
+
 			};
 
 	getChecked(className){
@@ -249,7 +255,7 @@ class App extends Component {
 				grutorInfo = [];
 			}
 			// set state whenever snapshot changes
-			
+
 			this.parseGruteeEventsList(grutorInfo);
 			this.setState({
 				classInfo: grutorInfo
@@ -483,7 +489,7 @@ class App extends Component {
   	componentDidMount(){
     	auth.onAuthStateChanged((user) => {
       	if(user){
-			const usersRef = firebase.database().ref("Users"); 
+			const usersRef = firebase.database().ref("Users");
 			usersRef.once('value', (snapshot) => {
 				console.log(snapshot.val());
 				let items = snapshot.val();
@@ -502,7 +508,7 @@ class App extends Component {
 		}
 	})
 }
-  	
+
 
 	// toggles the display of the add course overlay
   	togglePopup(){
@@ -580,7 +586,7 @@ class App extends Component {
 						<BigCalendar
 							selectable
 							localizer={localizer}
-							
+
 							events={this.state.current_user ?
 								this.eventList(this.state.calendarGrutorEvents).concat(this.eventListGrutee(this.state.calendarGruteeEvents))
 								:
@@ -589,9 +595,9 @@ class App extends Component {
 							defaultView={BigCalendar.Views.WEEK}
 							defaultDate={new Date(moment())}
 
-							
+
 							min = {new Date(moment('2018-05-17-2018 9:00', 'YYYY-MM-DD HH:mm'))}
-							
+
 
 							// min={new Date(2018, 10, 0, 9, 0, 0)}
    							// max={new Date(2018, 10, 0, 23, 0, 0)}
