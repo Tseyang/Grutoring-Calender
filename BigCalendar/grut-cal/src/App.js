@@ -530,13 +530,13 @@ class App extends Component {
 			});
 
 			// check if there are other shifts for this class for this user before choosing to remove from class-side DB
-			const userRef = firebase.database().ref("Users/" + currentUser + "/grutorClasses");
+			userRef = firebase.database().ref("Users/" + currentUser + "/grutorClasses");
 			userRef.once("value").then(function(snapshot){
 				var grutorClasses = snapshot.toJSON();
 				var otherShift = false;
 				for(let shift in grutorClasses){
 					var code = shift.substr(0, shift.lastIndexOf("-"));
-					if(code === targetCode && shift != shiftCode){
+					if(code === targetCode && shift !== shiftCode){
 						otherShift = true;
 						break;
 					}
