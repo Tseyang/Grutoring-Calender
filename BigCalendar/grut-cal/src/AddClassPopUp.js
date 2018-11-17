@@ -9,11 +9,9 @@ class ClassPopUp extends Component {
         this.state = {
             grutor: false,
             courses: props.courses,
-            repeat: false,
             formValues: {
                 course: "",
                 grutor: false,
-                repeat: false,
                 location: null,
                 day: null,
                 startTime: null,
@@ -52,7 +50,6 @@ class ClassPopUp extends Component {
         var newState = {};
         if(data.get("role") === "grutor"){
             newState = {
-                repeat:  data.get("repeat"),
                 location: data.get("location"),
                 day: data.get("day"),
                 startTime: data.get("startTime"),
@@ -79,16 +76,7 @@ class ClassPopUp extends Component {
                             {this.state.grutor ?
                                 <div id="grutor-fields">
                                     Location: <input type="text" name="location" required></input><br/>
-                                    Permanent <input type="checkbox" name="repeat" onClick={this.toggleRepeat}></input><br/>
-                                    {this.state.repeat ?
-                                        <div>
-                                            Select the day for your weekly grutoring hours:
-                                        </div>
-                                        :
-                                        <div>
-                                            Select the day for your temporary grutoring hours:
-                                        </div>
-                                    }Day:
+                                    Day:
                                     <select name="day" required>
                                         <option value="Monday">Monday</option>
                                         <option value="Tuesday">Tuesday</option>
