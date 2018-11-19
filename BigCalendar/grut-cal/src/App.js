@@ -272,6 +272,7 @@ class App extends Component {
 			}
 			// set state whenever snapshot changes
 			this.parseGruteeEventsList(grutorInfo);
+			console.log(grutorInfo);
 			this.setState({
 				classInfo: grutorInfo
 			},function(){
