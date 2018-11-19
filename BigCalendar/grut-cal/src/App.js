@@ -629,7 +629,6 @@ class App extends Component {
 								
 								)}
 
-
 							events={this.state.current_user ?
 								this.eventList(this.state.calendarGrutorEvents).concat(this.eventListGrutee(this.state.calendarGruteeEvents))
 								:
