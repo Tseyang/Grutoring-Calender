@@ -274,6 +274,8 @@ class App extends Component {
 		var start = "";
 		var end = "";
 		var isChecked = "";
+		var location = "";
+		var grutor = "";
 
 		// Initiliaze variables that have to be stored for parsing
 		var day = "";
@@ -291,6 +293,11 @@ class App extends Component {
 
 			//parse start time from grutorClasses list
 			startTime = Object.values(Object.values(grutorClasses[i])[0])[3];
+
+			grutor = this.state.current_user.displayName;
+
+			//parse location info
+			location = Object.values(Object.values(grutorClasses[i])[0])[2];
 
 			//parse end time from grutorClasses list
 			endTime = Object.values(Object.values(grutorClasses[i])[0])[1];
@@ -321,7 +328,9 @@ class App extends Component {
 					title,
 					start,
 					end,
-					isChecked
+					isChecked,
+					location,
+					grutor
 				}
 				tempEvents.push(obj)
 			}
@@ -339,6 +348,8 @@ class App extends Component {
 		var start = "";
 		var end = "";
 		var isChecked = "";
+		var location = "";
+		var grutor = "";
 
 		// Initiliaze variables that have to be stored for parsing
 		var day = "";
@@ -355,6 +366,11 @@ class App extends Component {
 			// parse title from grutorClasses list
 			title = Object.keys(classInfo[i])[0];
 
+			//parse location info
+			location = Object.values(Object.values(classInfo[i])[0])[2];
+
+			grutor = Object.values(Object.values(classInfo[i])[0])[4];
+
 			//parse start time from classInfo list
 			startTime = Object.values(Object.values(classInfo[i])[0])[3];
 
@@ -363,6 +379,19 @@ class App extends Component {
 
 			//parse day of grutee event from classInfo list
 			day = Object.values(Object.values(classInfo[i])[0])[0];
+
+
+
+
+
+
+			///check events that occur at the same time here - new for loop 
+
+
+
+
+
+
 
 			// Generate list of recurring events based on the input day
 			var recur = moment(START_DATE_FALL).recur(END_DATE_FALL).every(day).daysOfWeek();
@@ -387,7 +416,9 @@ class App extends Component {
 					title,
 					start,
 					end,
-					isChecked
+					isChecked,
+					location,
+					grutor,
 				}
 				tempEventsList.push(obj)
 			}
@@ -588,6 +619,16 @@ class App extends Component {
 						<BigCalendar
 							selectable
 							localizer={localizer}
+
+							onSelectEvent={event => alert(
+
+								"Class:  " +  event.title + "\n" +
+								"Location: " + event.location + "\n" +
+								"Time: " + event.start + "\n" +
+								"Grutor: " + event.grutor
+								
+								)}
+
 							events={this.state.current_user ?
 								this.eventList(this.state.calendarGrutorEvents).concat(this.eventListGrutee(this.state.calendarGruteeEvents))
 								:
