@@ -2,10 +2,9 @@ import React, { Component } from 'react';
 import BigCalendar from 'react-big-calendar';
 import moment from 'moment';
 import 'moment-recur';
-import { Column, Row } from 'simple-flexbox';
-import {Checkbox, CheckboxGroup} from 'react-checkbox-group';
+import { Row } from 'simple-flexbox';
 
-import firebase,  { auth, provider } from "./firebase.js";
+import firebase,  { auth } from "./firebase.js";
 
 import Navbar from './navbar.js';
 import ClassPopUp from './AddClassPopUp';
@@ -44,14 +43,21 @@ class App extends Component {
 		};
 		// logic for using offline json document for course listings
 		var HMcourses = ScrapedCourses["courses"];
+		var seenCourses = new Set()
 		for(let course in HMcourses){
 		    var curr_course = HMcourses[course];
-		    this.state.scrapedCourses.push(curr_course);
+			var courseCodeRaw = HMcourses[course]["course_code"];
+			var courseCode = courseCodeRaw.substr(0, courseCodeRaw.lastIndexOf(" "))
+			if(!seenCourses.has(courseCode)){
+				this.state.scrapedCourses.push(curr_course);
+				seenCourses.add(courseCode);
+			}
 		}
-
 		// capture users Table
 		usersRef.on("value", (snapshot) => {
-			this.state.usersSnapshot = snapshot;
+			this.setState({
+				usersSnapshot: snapshot
+			})
 		})
 
 		this.togglePopup = this.togglePopup.bind(this);
@@ -64,28 +70,15 @@ class App extends Component {
 		this.getChecked = this.getChecked.bind(this);
 	}
 
-	// mapGrutorEvents(){
-	// 	var grutorClasses = this.state.grutorClasses.map((grutClass) => {
-	// 		return(
-	// 			<div key={grutClass.value}>
-	// 				<label>{grutClass.value}<input type="checkbox" value={grutClass.value}
-	// 				checked ={grutClass.isChecked} onChange = {this.toggleGruteeClass.bind(this)}/> <br></br></label>
-	// 				<button key={grutClass.value+"_button"} value={grutClass.value} onClick={this.removeClass}>Remove class</button>
-	// 			</div>
-	// 		)
-	// 	})
-	// 	return grutorClasses
-	// };
-
 	mapEvents(classType){
 		var gruteeClasses = classType.map((enrolledClass) => {
 			return(
 				<div key={enrolledClass.value}>
 					<label>{enrolledClass.value}<input type="checkbox" value={enrolledClass.value}
-					checked ={enrolledClass.isChecked} 
-					onChange = {(classType == this.state.classes) ? this.toggleGruteeClass.bind(this) : this.toggleGrutorClass.bind(this)}/> <br></br></label>
-					<button key={enrolledClass.value+"_button"} value={enrolledClass.value} 
-					onClick={(classType == this.state.classes) ? () => this.removeCourse(enrolledClass.value,false) : () => this.removeCourse(enrolledClass.value,true)}>Remove class</button>
+					checked ={enrolledClass.isChecked}
+					onChange = {(classType === this.state.classes) ? this.toggleGruteeClass.bind(this) : this.toggleGrutorClass.bind(this)}/> <br></br></label>
+					<button key={enrolledClass.value+"_button"} value={enrolledClass.value}
+					onClick={(classType === this.state.classes) ? () => this.removeCourse(enrolledClass.value,false) : () => this.removeCourse(enrolledClass.value,true)}>Remove class</button>
 				</div>
 			)
 		})
@@ -96,7 +89,7 @@ class App extends Component {
 	toggleGrutorClass(event) {
 		const title = event.target.value;
 		for(let entry in this.state.grutorClasses){
-			if (this.state.grutorClasses[entry].value == title){
+			if (this.state.grutorClasses[entry].value === title){
 				this.state.grutorClasses[entry].isChecked = !(this.state.grutorClasses[entry].isChecked);
 			}
 		}
@@ -106,7 +99,7 @@ class App extends Component {
 	toggleGruteeClass(event) {
 		const title = event.target.value;
 		for(let entry in this.state.classes){
-			if (this.state.classes[entry].value == title){
+			if (this.state.classes[entry].value === title){
 				this.state.classes[entry].isChecked = !(this.state.classes[entry].isChecked);
 			}
 		}
@@ -117,14 +110,13 @@ class App extends Component {
 		var newEvents = calendarGrutorEvents.filter(attr => {
 			return this.getCheckedGrutor(attr.title) === true;
 		});
-			return newEvents
-	
-			};
+		return newEvents
+	}
 
 	getChecked(className){
 		for(let entry in this.state.classes){
-			if(this.state.classes[entry].value == className){
-				return this.state.classes[entry].isChecked
+			if(this.state.classes[entry].value === className){
+				return this.state.classes[entry].isChecked;
 			}
 		}
 		return false;
@@ -132,7 +124,7 @@ class App extends Component {
 
 	getCheckedGrutor(className){
 		for(let entry in this.state.grutorClasses){
-			if(this.state.grutorClasses[entry].value == className){
+			if(this.state.grutorClasses[entry].value === className){
 				return this.state.grutorClasses[entry].isChecked
 			}
 		}
@@ -140,12 +132,11 @@ class App extends Component {
 	}
 
 	eventListGrutee(calendarGruteeEvents){
-	var newEvents = calendarGruteeEvents.filter(attr => {
-		return this.getChecked(attr.title) === true;
-	});
-		return newEvents
-
-		};
+		var newEvents = calendarGruteeEvents.filter(attr => {
+			return this.getChecked(attr.title) === true;
+		});
+		return newEvents;
+	}
 
 	constructFirebaseEntry(json, grutor){
 		// function to construct Firebase course entry
@@ -163,20 +154,34 @@ class App extends Component {
 			// add to classes child in Firebase
 			course[name] = true; //can be replaced with actual data if we want it
 		}
-		return course
+		return course;
 	}
 
+	//add course to Users DB in Firebase
 	addToUsers(name, course_entry, grutor, currentUser){
-		//add course to Users DB in Firebase
 		usersRef.once("value").then(function(snapshot){
 			if(grutor){
+				var count = 1;
 				var grutorClasses = usersRef.child(currentUser).child("grutorClasses");
+				var code = Object.keys(course_entry)[0];
+				var shiftName = code + "-" + count.toString();
+				var indexed_entry = {[shiftName] : course_entry[code]}
 				if(!(snapshot.hasChild(currentUser) && snapshot.child(currentUser).hasChild("grutorClasses"))){
 					// no user or no grutoring classes for this user yet
-					grutorClasses.set(course_entry);
+					grutorClasses.set(indexed_entry);
 				}else{
-					// update
-					grutorClasses.child(name).set(course_entry[name]);
+					// check to see if add to existing list of classes or this is a new shift for an existing grutoring class
+					var existingShifts = snapshot.child(currentUser).child("grutorClasses").toJSON();
+					for(let shift in existingShifts){
+						var last_dash_index = shift.lastIndexOf("-")
+						var index = shift.substr(last_dash_index+1);
+						var shift_code = shift.substr(0, last_dash_index);
+						if(shift_code === code && index === count.toString()){
+							count++;
+						}
+					}
+					shiftName = code + "-" + count.toString();
+					grutorClasses.child(shiftName).set(course_entry[code]);
 				}
 			}else{
 				var classes = usersRef.child(currentUser).child("classes");
@@ -191,17 +196,17 @@ class App extends Component {
 		})
 	}
 
+	// adds course/grutor to Classes DB in Firebase
 	addToClasses(code, course_name, grutor, currentUser){
-		// adds course/grutor to Classes DB in Firebase
 		classesRef.once("value").then(function(snapshot){
 			if(!snapshot.hasChild(code)){
-				var course = {[code]: course_name}
-				classesRef.child(code).set(course)
+				var course = {[code]: course_name};
+				classesRef.child(code).set(course);
 			}
 			// add new grutor if not already present
 			if(grutor && !snapshot.child(code).child("grutors").child(currentUser).exists()){
-				var grutors = classesRef.child(code).child("grutors")
-				var data = {[currentUser]: true}
+				var grutors = classesRef.child(code).child("grutors");
+				var data = {[currentUser]: true};
 				grutors.child(currentUser).set(data[currentUser]);
 			}
 		})
@@ -209,15 +214,12 @@ class App extends Component {
 
 	// callback function for adding a course using overlay
   addCourse(course){
-	    var json = course;
-
-	    //json
-	    const currentUser = this.state.current_user.displayName;
+    var json = course;
+    const currentUser = this.state.current_user.displayName;
 		const grutor = json["role"] === "grutor";
 		const course_name = json["course"].substr(json["course"].lastIndexOf("-")+1).trim()
 		var course_entry = this.constructFirebaseEntry(json, grutor);
 		var name = Object.keys(course_entry)[0];
-
 		this.addToUsers(name, course_entry, grutor, currentUser);
 		this.addToClasses(name, course_name, grutor, currentUser);
   }
@@ -226,21 +228,27 @@ class App extends Component {
 	getGrutoringInfo(classes){
 		classesRef.on("value", (snapshot) => {
 			var grutorInfo = [];
+			var obj = {};
 			if(this.state.usersSnapshot !== null){
 				for(let i in classes){
 					var classCode = classes[i]
 					// get grutors for this class
 					var grutors = snapshot.child(classCode).child("grutors");
 					if(grutors.exists()){
-						var grutorJSON = grutors.toJSON();
-						for(let grutorName in grutorJSON){
-							var obj = {};
-							obj[classCode] = this.state.usersSnapshot.child(grutorName).child("grutorClasses").child(classCode).val();
-							obj[classCode]["grutor"] = grutorName.key;
-							grutorInfo.push(obj);
+						var grutorsJSON = grutors.toJSON();
+						for(let grutorName in grutorsJSON){
+							var grutorJSON = this.state.usersSnapshot.child(grutorName).child("grutorClasses").toJSON();
+							for(let shift in grutorJSON){
+								obj = {};
+								if(shift.substr(0, shift.lastIndexOf('-')) === classCode){
+									obj[classCode] = grutorJSON[shift];
+									obj[classCode]["grutor"] = grutorName
+									grutorInfo.push(obj);
+								}
+							}
 						}
 					}else{
-						var obj = {};
+						obj = {};
 						obj[classCode] = "No grutors for this class";
 						grutorInfo.push(obj);
 					}
@@ -249,19 +257,18 @@ class App extends Component {
 				grutorInfo = [];
 			}
 			// set state whenever snapshot changes
-			
 			this.parseGruteeEventsList(grutorInfo);
 			this.setState({
 				classInfo: grutorInfo
-			} )
+			},function(){
+				console.log(this.state.classInfo)
+			});
 		})
 	}
-
 
 	// Helper function that parses grutorClasses obtained from Firebase into events
 	// list to be displayed on calendar
 	parseGrutorEventsList(grutorClasses) {
-
 		// Initialize variable that events object uses
 		var title = "";
 		var start = "";
@@ -276,13 +283,6 @@ class App extends Component {
 		var endTime = "";
 		var dateTimeStringEnd = "";
 		var tempEvents = [];
-
-		// console.log("START DATE");
-		// console.log(START_DATE_FALL);
-		// var recurring_date = moment(START_DATE_FALL).recur(END_DATE_FALL).every("Monday").daysOfWeek();
-		// console.log(recurring_date.matches("2018-09-03"));
-		// console.log(recurring_date.next(16));
-
 
 		// Iterate through every {} object in grutorInfo
 		for(var i = 0; i < grutorClasses.length; i++) {
@@ -326,17 +326,14 @@ class App extends Component {
 				tempEvents.push(obj)
 			}
 		}
-
 		// Now we update the current state to reflect changes in events displayed
 		// on the calendar
 		this.setState({
 			calendarGrutorEvents: tempEvents
 		});
-
 	}
 
 	parseGruteeEventsList(classInfo) {
-
 		// Initialize variable that events object uses
 		var title = "";
 		var start = "";
@@ -401,12 +398,9 @@ class App extends Component {
 		this.setState({
 			calendarGruteeEvents: tempEventsList
 		});
-
 	}
 
-
-
-	// function to display courses from Firebase
+	// function to get courses from Firebase
 	setCourses(){
 		if(this.state.current_user === null){
 			// no user logged in
@@ -419,25 +413,24 @@ class App extends Component {
 			})
 		}else{
 			const currentUser = this.state.current_user.displayName;
-			const userRef = firebase.database().ref("Users"+"/"+currentUser);
+			const userRef = firebase.database().ref("Users/"+currentUser);
 			// get snapshot of user's entry in Firebase
 			userRef.on('value', (snapshot) => {
-				var enrolledClasses = [];
-				var grutorClasses = [];
+				let enrolledClasses = [];
+				let grutorClasses = [];
 				if(snapshot.exists()){
 					// get classes for this user
 					if(snapshot.hasChild("classes")){
 						snapshot.child("classes").forEach(function(child){
-							enrolledClasses.push(child.key)
+							enrolledClasses.push(child.key);
 						});
 						this.getGrutoringInfo(enrolledClasses);
 					}
 					// get classes this user is grutoring for
 					if(snapshot.hasChild("grutorClasses")){
-						var data = snapshot.child("grutorClasses").val();
+						let data = snapshot.child("grutorClasses").val();
 						for(let grutorClass in data){
-							var obj = {};
-							obj[grutorClass] = data[grutorClass];
+							let obj = {[grutorClass]: data[grutorClass]};
 							grutorClasses.push(obj);
 						}
 					}
@@ -464,91 +457,107 @@ class App extends Component {
 
   	//logout function to be passed to navbar component
   	logout(){
-      	auth.signOut().then(() => {
-          	this.setState({
-              	current_user: null
-          	});
-      	});
+    	auth.signOut().then(() => {
+        	this.setState({
+            	current_user: null
+        	});
+    	});
   	}
 
 	displayData() {
-	var userData = this.state.testState.map((item) => {
-		return (
-			<li key={item.id}>{item.classes[0]}
-			</li>
-		)});
-	return userData;
+		let userData = this.state.testState.map((item) => {
+			return (
+				<li key={item.id}>{item.classes[0]}</li>
+			)});
+		return userData;
 	}
 
-  	componentDidMount(){
-    	auth.onAuthStateChanged((user) => {
-      	if(user){
-			const usersRef = firebase.database().ref("Users"); 
-			usersRef.once('value', (snapshot) => {
-				console.log(snapshot.val());
-				let items = snapshot.val();
-    			let newState = [];
-    			for (let item in items) {
-					newState.push({
-						id: item,
-						class: items[item].classes,
-						grutorClassses: items[item].grutorClasses
-					});
-				}
+	componentDidMount(){
+  	auth.onAuthStateChanged((user) => {
+    	if(user){
+				const usersRef = firebase.database().ref("Users");
+				usersRef.once('value', (snapshot) => {
+					let items = snapshot.val();
+	    			let newState = [];
+	    			for (let item in items) {
+							newState.push({
+								id: item,
+								class: items[item].classes,
+								grutorClassses: items[item].grutorClasses
+							});
+						}
           	this.setState({
               	current_user: user,
           	}, this.setCourses);
-		  })
-		}
-	})
-}
-  	
-
-	// toggles the display of the add course overlay
-  	togglePopup(){
-    	this.setState({
-        	showPopup: !this.state.showPopup
-    	});
-  	};
-
-	// function for removing course from Firebase
-	removeClass(courseCode){
-		// TODO: Implement functionality for removing class from Firebase on button click
-		alert("Remove class functionality yet to be implemented");
+		  	})
+			}
+		})
 	}
 
+	// toggles the display of the add course overlay
+	togglePopup(){
+  	this.setState({
+      	showPopup: !this.state.showPopup
+  	});
+	};
+
 	// function for removing course from Firebase
-	removeCourse(courseCode,isGrutor){
+	removeCourse(shiftCode,isGrutor){
+		const currentUser = this.state.current_user.displayName;
 		if (isGrutor){
-			const userRef = firebase.database().ref(`/Users/${this.state.current_user.displayName}/grutorClasses/${courseCode}`);
-			const grutorRef = firebase.database().ref(`/Classes/${courseCode}/grutors/${this.state.current_user.displayName}`);
-			grutorRef.remove()
-				.then(function() {
-					console.log("Remove succeeded.")
-				})
-				.catch(function(error) {
-					console.log("Remove failed: " + error.message)
-				});
-			userRef.remove();
+			// remove the shift entry for this user under Users DB
+			var userRef = firebase.database().ref(`/Users/${currentUser}/grutorClasses/${shiftCode}`);
+			var targetCode = shiftCode.substr(0, shiftCode.lastIndexOf("-"));
+			userRef.remove().then(function() {
+				console.log("User-side Grutor remove succeeded.")
+			})
+			.catch(function(error) {
+				console.log("User-side Grutor remove failed: " + error.message)
+			});
+
+			// check if there are other shifts for this class for this user before choosing to remove from class-side DB
+			userRef = firebase.database().ref("Users/" + currentUser + "/grutorClasses");
+			userRef.once("value").then(function(snapshot){
+				var grutorClasses = snapshot.toJSON();
+				var otherShift = false;
+				for(let shift in grutorClasses){
+					var code = shift.substr(0, shift.lastIndexOf("-"));
+					if(code === targetCode && shift !== shiftCode){
+						otherShift = true;
+						break;
+					}
+				}
+				if(!otherShift){
+					// no other shifts, remove this user from grutor list in class DB
+					console.log("No other shifts");
+					const grutorRef = firebase.database().ref(`/Classes/${targetCode}/grutors/${currentUser}`);
+					grutorRef.remove().then(function(){
+						console.log("Class-side Grutor remove succeeded.")
+					}).catch(function(error){
+						console.log("Class-side Grutor remove failed: " + error.message);
+					})
+				}
+			})
 		}
 		else{
-			const userRef = firebase.database().ref(`/Users/${this.state.current_user.displayName}/classes/${courseCode}`);
+			// remove class from Users Classes under Users DB
+			const userRef = firebase.database().ref(`/Users/${currentUser}/classes/${shiftCode}`);
 			console.log("Remove grutee succeeded.")
 			userRef.remove();
 		}
 	}
 
-  	render() {
-	    return (
-	        <div className = "wholeThing">
-	            <Row>
-	                <Navbar
-	                    logout={this.logout}
+	render() {
+    return (
+      <div className = "wholeThing">
+        <Row>
+          <Navbar
+            logout={this.logout}
 						current_user = {this.state.current_user}
-	                />
-	            </Row>
+					/>
+        </Row>
 				<div className = "body" >
-	            	<div className = "classSidebar" >
+          <div className = "classSidebar" >
 						<h1>Class List</h1>
 						<form>
 						{this.state.current_user ?
@@ -565,7 +574,6 @@ class App extends Component {
 							null
 						}
 						</form>
-
 						{this.state.current_user ?
 							<div>
 								<button onClick={this.togglePopup}>Add a class</button>
@@ -580,7 +588,6 @@ class App extends Component {
 						<BigCalendar
 							selectable
 							localizer={localizer}
-							
 							events={this.state.current_user ?
 								this.eventList(this.state.calendarGrutorEvents).concat(this.eventListGrutee(this.state.calendarGruteeEvents))
 								:
@@ -588,28 +595,24 @@ class App extends Component {
 							}
 							defaultView={BigCalendar.Views.WEEK}
 							defaultDate={new Date(moment())}
-
-							
 							min = {new Date(moment('2018-05-17-2018 9:00', 'YYYY-MM-DD HH:mm'))}
-							
-
 							// min={new Date(2018, 10, 0, 9, 0, 0)}
-   							// max={new Date(2018, 10, 0, 23, 0, 0)}
+	 						// max={new Date(2018, 10, 0, 23, 0, 0)}
 						/>
 					</div>
 				</div>
 				<div name = "classPopUp">
-	            {this.state.showPopup ?
-	                <ClassPopUp
-	                    courses = {this.state.scrapedCourses}
-	                    closePopup = {this.togglePopup}
-	                    addCourse = {(course) => {this.addCourse(course)}}/>
-	                :
-	                null
-				}
+          {this.state.showPopup ?
+            <ClassPopUp
+              courses = {this.state.scrapedCourses}
+              closePopup = {this.togglePopup}
+              addCourse = {(course) => {this.addCourse(course)}}/>
+            :
+            null
+					}
 				</div>
-	        </div>
-	  	);
+			</div>
+  	);
 	}
 };
 
