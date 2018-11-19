@@ -53,7 +53,6 @@ class App extends Component {
 				seenCourses.add(courseCode);
 			}
 		}
-
 		// capture users Table
 		usersRef.on("value", (snapshot) => {
 			this.setState({
@@ -111,14 +110,13 @@ class App extends Component {
 		var newEvents = calendarGrutorEvents.filter(attr => {
 			return this.getCheckedGrutor(attr.title) === true;
 		});
-			return newEvents
-
-			};
+		return newEvents
+	}
 
 	getChecked(className){
 		for(let entry in this.state.classes){
 			if(this.state.classes[entry].value === className){
-				return this.state.classes[entry].isChecked
+				return this.state.classes[entry].isChecked;
 			}
 		}
 		return false;
@@ -134,12 +132,11 @@ class App extends Component {
 	}
 
 	eventListGrutee(calendarGruteeEvents){
-	var newEvents = calendarGruteeEvents.filter(attr => {
-		return this.getChecked(attr.title) === true;
-	});
-		return newEvents
-
-		};
+		var newEvents = calendarGruteeEvents.filter(attr => {
+			return this.getChecked(attr.title) === true;
+		});
+		return newEvents;
+	}
 
 	constructFirebaseEntry(json, grutor){
 		// function to construct Firebase course entry
@@ -157,7 +154,7 @@ class App extends Component {
 			// add to classes child in Firebase
 			course[name] = true; //can be replaced with actual data if we want it
 		}
-		return course
+		return course;
 	}
 
 	//add course to Users DB in Firebase
@@ -199,17 +196,17 @@ class App extends Component {
 		})
 	}
 
+	// adds course/grutor to Classes DB in Firebase
 	addToClasses(code, course_name, grutor, currentUser){
-		// adds course/grutor to Classes DB in Firebase
 		classesRef.once("value").then(function(snapshot){
 			if(!snapshot.hasChild(code)){
-				var course = {[code]: course_name}
-				classesRef.child(code).set(course)
+				var course = {[code]: course_name};
+				classesRef.child(code).set(course);
 			}
 			// add new grutor if not already present
 			if(grutor && !snapshot.child(code).child("grutors").child(currentUser).exists()){
-				var grutors = classesRef.child(code).child("grutors")
-				var data = {[currentUser]: true}
+				var grutors = classesRef.child(code).child("grutors");
+				var data = {[currentUser]: true};
 				grutors.child(currentUser).set(data[currentUser]);
 			}
 		})
@@ -217,8 +214,8 @@ class App extends Component {
 
 	// callback function for adding a course using overlay
   addCourse(course){
-	    var json = course;
-	    const currentUser = this.state.current_user.displayName;
+    var json = course;
+    const currentUser = this.state.current_user.displayName;
 		const grutor = json["role"] === "grutor";
 		const course_name = json["course"].substr(json["course"].lastIndexOf("-")+1).trim()
 		var course_entry = this.constructFirebaseEntry(json, grutor);
@@ -265,15 +262,13 @@ class App extends Component {
 				classInfo: grutorInfo
 			},function(){
 				console.log(this.state.classInfo)
-			})
+			});
 		})
 	}
-
 
 	// Helper function that parses grutorClasses obtained from Firebase into events
 	// list to be displayed on calendar
 	parseGrutorEventsList(grutorClasses) {
-
 		// Initialize variable that events object uses
 		var title = "";
 		var start = "";
@@ -331,17 +326,14 @@ class App extends Component {
 				tempEvents.push(obj)
 			}
 		}
-
 		// Now we update the current state to reflect changes in events displayed
 		// on the calendar
 		this.setState({
 			calendarGrutorEvents: tempEvents
 		});
-
 	}
 
 	parseGruteeEventsList(classInfo) {
-
 		// Initialize variable that events object uses
 		var title = "";
 		var start = "";
@@ -406,12 +398,9 @@ class App extends Component {
 		this.setState({
 			calendarGruteeEvents: tempEventsList
 		});
-
 	}
 
-
-
-	// function to display courses from Firebase
+	// function to get courses from Firebase
 	setCourses(){
 		if(this.state.current_user === null){
 			// no user logged in
@@ -427,22 +416,21 @@ class App extends Component {
 			const userRef = firebase.database().ref("Users/"+currentUser);
 			// get snapshot of user's entry in Firebase
 			userRef.on('value', (snapshot) => {
-				var enrolledClasses = [];
-				var grutorClasses = [];
+				let enrolledClasses = [];
+				let grutorClasses = [];
 				if(snapshot.exists()){
 					// get classes for this user
 					if(snapshot.hasChild("classes")){
 						snapshot.child("classes").forEach(function(child){
-							enrolledClasses.push(child.key)
+							enrolledClasses.push(child.key);
 						});
 						this.getGrutoringInfo(enrolledClasses);
 					}
 					// get classes this user is grutoring for
 					if(snapshot.hasChild("grutorClasses")){
-						var data = snapshot.child("grutorClasses").val();
+						let data = snapshot.child("grutorClasses").val();
 						for(let grutorClass in data){
-							var obj = {};
-							obj[grutorClass] = data[grutorClass];
+							let obj = {[grutorClass]: data[grutorClass]};
 							grutorClasses.push(obj);
 						}
 					}
@@ -469,51 +457,49 @@ class App extends Component {
 
   	//logout function to be passed to navbar component
   	logout(){
-      	auth.signOut().then(() => {
-          	this.setState({
-              	current_user: null
-          	});
-      	});
+    	auth.signOut().then(() => {
+        	this.setState({
+            	current_user: null
+        	});
+    	});
   	}
 
 	displayData() {
-	var userData = this.state.testState.map((item) => {
-		return (
-			<li key={item.id}>{item.classes[0]}
-			</li>
-		)});
-	return userData;
+		let userData = this.state.testState.map((item) => {
+			return (
+				<li key={item.id}>{item.classes[0]}</li>
+			)});
+		return userData;
 	}
 
-  	componentDidMount(){
-    	auth.onAuthStateChanged((user) => {
-      	if(user){
-			const usersRef = firebase.database().ref("Users");
-			usersRef.once('value', (snapshot) => {
-				let items = snapshot.val();
-    			let newState = [];
-    			for (let item in items) {
-					newState.push({
-						id: item,
-						class: items[item].classes,
-						grutorClassses: items[item].grutorClasses
-					});
-				}
+	componentDidMount(){
+  	auth.onAuthStateChanged((user) => {
+    	if(user){
+				const usersRef = firebase.database().ref("Users");
+				usersRef.once('value', (snapshot) => {
+					let items = snapshot.val();
+	    			let newState = [];
+	    			for (let item in items) {
+							newState.push({
+								id: item,
+								class: items[item].classes,
+								grutorClassses: items[item].grutorClasses
+							});
+						}
           	this.setState({
               	current_user: user,
           	}, this.setCourses);
-		  })
-		}
-	})
-}
-
+		  	})
+			}
+		})
+	}
 
 	// toggles the display of the add course overlay
-  	togglePopup(){
-    	this.setState({
-        	showPopup: !this.state.showPopup
-    	});
-  	};
+	togglePopup(){
+  	this.setState({
+      	showPopup: !this.state.showPopup
+  	});
+	};
 
 	// function for removing course from Firebase
 	removeCourse(shiftCode,isGrutor){
@@ -561,17 +547,17 @@ class App extends Component {
 		}
 	}
 
-  	render() {
-	    return (
-	        <div className = "wholeThing">
-	            <Row>
-	                <Navbar
-	                    logout={this.logout}
+	render() {
+    return (
+      <div className = "wholeThing">
+        <Row>
+          <Navbar
+            logout={this.logout}
 						current_user = {this.state.current_user}
-	                />
-	            </Row>
+					/>
+        </Row>
 				<div className = "body" >
-	            	<div className = "classSidebar" >
+          <div className = "classSidebar" >
 						<h1>Class List</h1>
 						<form>
 						{this.state.current_user ?
@@ -588,7 +574,6 @@ class App extends Component {
 							null
 						}
 						</form>
-
 						{this.state.current_user ?
 							<div>
 								<button onClick={this.togglePopup}>Add a class</button>
@@ -603,7 +588,6 @@ class App extends Component {
 						<BigCalendar
 							selectable
 							localizer={localizer}
-
 							events={this.state.current_user ?
 								this.eventList(this.state.calendarGrutorEvents).concat(this.eventListGrutee(this.state.calendarGruteeEvents))
 								:
@@ -611,28 +595,24 @@ class App extends Component {
 							}
 							defaultView={BigCalendar.Views.WEEK}
 							defaultDate={new Date(moment())}
-
-
 							min = {new Date(moment('2018-05-17-2018 9:00', 'YYYY-MM-DD HH:mm'))}
-
-
 							// min={new Date(2018, 10, 0, 9, 0, 0)}
-   							// max={new Date(2018, 10, 0, 23, 0, 0)}
+	 						// max={new Date(2018, 10, 0, 23, 0, 0)}
 						/>
 					</div>
 				</div>
 				<div name = "classPopUp">
-	            {this.state.showPopup ?
-	                <ClassPopUp
-	                    courses = {this.state.scrapedCourses}
-	                    closePopup = {this.togglePopup}
-	                    addCourse = {(course) => {this.addCourse(course)}}/>
-	                :
-	                null
-				}
+          {this.state.showPopup ?
+            <ClassPopUp
+              courses = {this.state.scrapedCourses}
+              closePopup = {this.togglePopup}
+              addCourse = {(course) => {this.addCourse(course)}}/>
+            :
+            null
+					}
 				</div>
-	        </div>
-	  	);
+			</div>
+  	);
 	}
 };
 
