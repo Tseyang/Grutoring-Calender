@@ -4,7 +4,7 @@ Adapted from hyperscheduler-scraper @ https://github.com/MuddCreates/hyperschedu
 Author: Tse Yang Lim
 """
 import sys
-import os
+import subprocess
 import json
 import selenium.webdriver
 import selenium.webdriver.chrome.options
@@ -131,6 +131,14 @@ if __name__ == "__main__":
 	browser = get_browser(True)
 	HM_course_html = get_portal_html(browser)
 	raw_courses = parse_portal_html(HM_course_html)
-	# TODO: change file to be saved as .js with appropriate declarations on top of JSON object
-	with open("courses.json", "w") as f:
+	# with open("courses.json", "w") as f:
+	# 	json.dump(raw_courses, f)
+
+	# Write JS file for React to depend on when generating course list, transfer file to the appropriate location in the React src directory.
+	with open("courses.js", "w") as f:
+		f.write("const ScrapedCourses =\n")
 		json.dump(raw_courses, f)
+		f.write(";\nexport default ScrapedCourses;")
+	command = "cp courses.js ../BigCalendar/grut-cal/src/courses.js"
+	process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+	output, error = process.communicate()
