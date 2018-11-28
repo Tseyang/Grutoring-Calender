@@ -13,4 +13,5 @@ Grutoring Calender seeks to consolidate the information of grutoring/Office Hour
 5. react-tackle-box
 6. firebase
 7. moment-recur
+8. @material-ui/core
 
