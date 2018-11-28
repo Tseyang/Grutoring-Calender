@@ -9,6 +9,12 @@ button.rbc-btn {
   -webkit-appearance: button;
   cursor: pointer;
 }
+
+button{
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+}
+
 button[disabled].rbc-btn {
   cursor: not-allowed;
 }
@@ -75,7 +81,7 @@ button.rbc-input::-moz-focus-inner {
   padding: 0 3px;
   text-align: center;
   vertical-align: middle;
-  font-weight: bold;
+  font-weight: 500;
   font-size: 90%;
   min-height: 600;
   border-bottom: 1px solid #DDD;
@@ -118,7 +124,9 @@ button.rbc-input::-moz-focus-inner {
       -ms-flex-align: center;
           align-items: center;
   margin-bottom: 10px;
-  font-size: 16px;
+  font-size: 26px;
+  font-weight: 500;
+  font-family: 'Open Sans', sans-serif;
 }
 .rbc-toolbar .rbc-toolbar-label {
   -webkit-flex-grow: 1;
@@ -128,14 +136,14 @@ button.rbc-input::-moz-focus-inner {
   text-align: center;
 }
 .rbc-toolbar button {
-  color: #373a3c;
+  color: #299eff;
   display: inline-block;
   margin: 0;
   text-align: center;
   vertical-align: middle;
   background: none;
   background-image: none;
-  border: 1px solid #ccc;
+  border: 1px solid #299eff;
   padding: .375rem 1rem;
   border-radius: 4px;
   line-height: normal;
@@ -144,27 +152,30 @@ button.rbc-input::-moz-focus-inner {
 .rbc-toolbar button:active,
 .rbc-toolbar button.rbc-active {
   background-image: none;
-  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-  background-color: #e6e6e6;
-  border-color: #adadad;
+  /* box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125); */
+  background-color: #299eff;
+  border-color: #299eff;
+  color: rgb(255, 255, 255)
 }
 .rbc-toolbar button:active:hover,
 .rbc-toolbar button.rbc-active:hover,
 .rbc-toolbar button:active:focus,
 .rbc-toolbar button.rbc-active:focus {
-  color: #373a3c;
-  background-color: #d4d4d4;
-  border-color: #8c8c8c;
+  color: #fff;
+  background-color: #2180ce;
+  border-color: #2180ce;
+  outline: none;
 }
 .rbc-toolbar button:focus {
-  color: #373a3c;
-  background-color: #e6e6e6;
-  border-color: #adadad;
+  color: #2180ce;
+  background-color: #d7edff;
+  border-color: #2180ce;
+  outline: none;
 }
 .rbc-toolbar button:hover {
-  color: #373a3c;
-  background-color: #e6e6e6;
-  border-color: #adadad;
+  color: #2180ce;
+  background-color: #d7edff;
+  border-color: #2180ce;
 }
 .rbc-btn-group {
   display: inline-block;
@@ -699,10 +710,9 @@ button.rbc-input::-moz-focus-inner {
 }
 .rbc-current-time-indicator {
   position: absolute;
-  z-index: 3;
   left: 0;
   right: 0;
   height: 1px;
-  background-color: #74ad31;
+  background-color: #003585;
   pointer-events: none;
 }

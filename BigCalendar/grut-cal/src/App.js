@@ -20,6 +20,25 @@ import './css/App.css'
 import './css/class-panel.css';
 import './css/react-big-calendar.css';
 
+import Typography from '@material-ui/core/Typography';
+import { withStyles } from '@material-ui/core/styles';
+import green from '@material-ui/core/colors/green';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
+import Button from '@material-ui/core/Button';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import Zoom from '@material-ui/core/Zoom';
+import Collapse from '@material-ui/core/Collapse';
+import Slide from '@material-ui/core/Slide';
+import Grow from '@material-ui/core/Grow';
+
+import PropTypes from 'prop-types';
+
+
+
 const localizer = BigCalendar.momentLocalizer(moment)
 const classesRef = firebase.database().ref("Classes");
 const usersRef = firebase.database().ref("Users");
@@ -40,9 +59,24 @@ const DAYS = {
 	"Saturday": 5,
 	"Sunday": 6
 }
+// const styles = {
+// 	root: {
+// 	  background: 'red',
+// 	  borderRadius: 3,
+// 	  border: 0,
+// 	  color: 'white',
+// 	  height: 48,
+// 	  padding: '0 30px',
+// 	  boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
+// 	},
+// 	label: {
+// 	  textTransform: 'capitalize',
+// 	},
+//   };
 
 class App extends Component {
 	constructor(props) {
+		const { classes } = props;
 		super(props);
 		this.state = {
 		    current_user: null,
@@ -54,7 +88,8 @@ class App extends Component {
 			usersSnapshot: null,
 			courses: [],
 			calendarGruteeEvents: [], // events display format of grutee events
-			calendarGrutorEvents: [] // events display format of grutor events
+			calendarGrutorEvents: [], // events display format of grutor events
+			isLoaded: false
 		};
 		// logic for using local json data in courses.js for course listings
 		var HMcourses = ScrapedCourses["courses"];
@@ -83,20 +118,59 @@ class App extends Component {
 		this.getGrutoringInfo = this.getGrutoringInfo.bind(this);
 		this.mapEvents = this.mapEvents.bind(this);
 		this.getChecked = this.getChecked.bind(this);
+		this.testLoad = this.testLoad.bind(this)
 	}
 
 	mapEvents(classType){
 		var gruteeClasses = classType.map((enrolledClass) => {
 			return(
-				<div key={enrolledClass.value}>
-					<label>{enrolledClass.value}<input type="checkbox" value={enrolledClass.value}
-					checked ={enrolledClass.isChecked}
-					onChange = {(classType === this.state.classes) ? this.toggleGruteeClass.bind(this) : this.toggleGrutorClass.bind(this)}/> <br></br></label>
-					<button key={enrolledClass.value+"_button"} value={enrolledClass.value}
-					onClick={(classType === this.state.classes) ? () => this.removeCourse(enrolledClass.value,false) : () => this.removeCourse(enrolledClass.value,true)}>Remove class</button>
+				<div className = "classCards">
+				<Card
+					classes={
+						{root: 'card-state-root'} // class name, e.g. `classes-nesting-root-x`
+					}>
+					<CardContent
+					classes={
+						{root: 'classes-state-root'} // class name, e.g. `classes-nesting-root-x`
+					}>
+					<div className = "test">
+					<div className = "classCheckbox">
+					<FormControlLabel
+						control = {
+							<Checkbox 
+								value={enrolledClass.value}
+								checked ={enrolledClass.isChecked}
+								onChange = {(classType === this.state.classes) ? this.toggleGruteeClass.bind(this) : this.toggleGrutorClass.bind(this)}
+							/>
+						}
+						label = {<div className = "classLabel">
+								{enrolledClass.value}
+								</div>}		
+					/>
+					</div>
+					<div className = "classButton">
+					<Button 
+						variant = "contained" 
+						key={enrolledClass.value+"_button"} 
+						value={enrolledClass.value}
+						onClick={(classType === this.state.classes) ? 
+							() => this.removeCourse(enrolledClass.value,false) 
+							: 
+							() => this.removeCourse(enrolledClass.value,true)
+						}
+						classes={{
+							root: 'classes-state-root', // class name, e.g. `classes-nesting-root-x`
+							}}>
+						Remove class
+					</Button>
+					</div>
+					</div>
+					</CardContent>
+				</Card>
 				</div>
 			)
 		})
+		this.state.isLoaded = true;
 		return gruteeClasses;
 	};
 
@@ -668,36 +742,59 @@ class App extends Component {
 		}
 	}
 
+	testLoad(){
+		this.state.isLoaded = false;
+		return "Loading in classes"
+	}
+
 	render() {
     return (
       <div className = "wholeThing">
         <Row>
           <Navbar
             logout={this.logout}
-						current_user = {this.state.current_user}
-					/>
+			current_user = {this.state.current_user}
+			/>
         </Row>
-				<div className = "body" >
-          <div className = "classSidebar" >
-						<h1>Class List</h1>
-						<form>
+			<div className = "body" >
+          		<div className = "classSidebar" >
+				  		<Typography variant="h4">
+						Class List
+						</Typography>
+						{!this.state.current_user ?
+							"Loading user classes"
+							:
+							null
+						}
+						<Grow  in={this.state.current_user} timeout = {1500}>
+						<FormGroup column>
+					
 						{this.state.current_user ?
 							this.mapEvents(this.state.classes)
 							:
 							null
 						}
-						</form>
+						</FormGroup>
+						</Grow>
+
 						<h1>Grutoring List</h1>
-						<form>
+						<FormGroup column>
 						{this.state.current_user ?
+							 
 							this.mapEvents(this.state.grutorClasses)
+								
 							:
 							null
 						}
-						</form>
+						</FormGroup>
 						{this.state.current_user ?
-							<div>
-								<button onClick={this.togglePopup}>Add a class</button>
+							<div name = "addClassButton">
+								<Button 
+									variant="contained" 
+									color="primary"
+									onClick={this.togglePopup}>
+									Add a class
+								</Button>
 							</div>
 							:
 							<div>
