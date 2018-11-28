@@ -118,7 +118,8 @@ class App extends Component {
 		this.getGrutoringInfo = this.getGrutoringInfo.bind(this);
 		this.mapEvents = this.mapEvents.bind(this);
 		this.getChecked = this.getChecked.bind(this);
-		this.testLoad = this.testLoad.bind(this)
+		this.testLoad = this.testLoad.bind(this);
+		this.fillSelectedShift = this.fillSelectedShift.bind(this);
 	}
 
 	mapEvents(classType){
@@ -137,7 +138,7 @@ class App extends Component {
 					<div className = "classCheckbox">
 					<FormControlLabel
 						control = {
-							<Checkbox 
+							<Checkbox
 								value={enrolledClass.value}
 								checked ={enrolledClass.isChecked}
 								onChange = {(classType === this.state.classes) ? this.toggleGruteeClass.bind(this) : this.toggleGrutorClass.bind(this)}
@@ -145,17 +146,17 @@ class App extends Component {
 						}
 						label = {<div className = "classLabel">
 								{enrolledClass.value}
-								</div>}		
+								</div>}
 					/>
 					</div>
 					<div className = "classButton">
-					<Button 
-						variant = "contained" 
-						key={enrolledClass.value+"_button"} 
+					<Button
+						variant = "contained"
+						key={enrolledClass.value+"_button"}
 						value={enrolledClass.value}
-						onClick={(classType === this.state.classes) ? 
-							() => this.removeCourse(enrolledClass.value,false) 
-							: 
+						onClick={(classType === this.state.classes) ?
+							() => this.removeCourse(enrolledClass.value,false)
+							:
 							() => this.removeCourse(enrolledClass.value,true)
 						}
 						classes={{
@@ -747,6 +748,14 @@ class App extends Component {
 		return "Loading in classes"
 	}
 
+	fillSelectedShift(event){
+		document.getElementById("selected-shift-class").innerHTML = "Class:  " +  event.title;
+		document.getElementById("selected-shift-location").innerHTML = "Location: " + event.location;
+		document.getElementById("selected-shift-start").innerHTML = "Start: " + event.start;
+		document.getElementById("selected-shift-end").innerHTML = "End: " + event.end;
+		document.getElementById("selected-shift-grutors").innerHTML = "Grutor: " + event.grutor;
+	}
+
 	render() {
     return (
       <div className = "wholeThing">
@@ -759,8 +768,18 @@ class App extends Component {
 			<div className = "body" >
           		<div className = "classSidebar" >
 				  		<Typography variant="h4">
-						Class List
 						</Typography>
+						<div id="selected-shift">
+							<h1>Selected Shift</h1>
+							<div id="selected-shift-body">
+								<p id="selected-shift-class"></p>
+								<p id="selected-shift-location"></p>
+								<p id="selected-shift-start"></p>
+								<p id="selected-shift-end"></p>
+								<p id="selected-shift-grutors"></p>
+							</div>
+						</div>
+						<h1>Class List</h1>
 						{!this.state.current_user ?
 							"Loading user classes"
 							:
@@ -768,7 +787,7 @@ class App extends Component {
 						}
 						<Grow  in={this.state.current_user} timeout = {1500}>
 						<FormGroup column>
-					
+
 						{this.state.current_user ?
 							this.mapEvents(this.state.classes)
 							:
@@ -780,17 +799,17 @@ class App extends Component {
 						<h1>Grutoring List</h1>
 						<FormGroup column>
 						{this.state.current_user ?
-							 
+
 							this.mapEvents(this.state.grutorClasses)
-								
+
 							:
 							null
 						}
 						</FormGroup>
 						{this.state.current_user ?
 							<div name = "addClassButton">
-								<Button 
-									variant="contained" 
+								<Button
+									variant="contained"
 									color="primary"
 									onClick={this.togglePopup}>
 									Add a class
@@ -807,14 +826,8 @@ class App extends Component {
 							selectable
 							localizer={localizer}
 
-							onSelectEvent={event => alert(
-
-								"Class:  " +  event.title + "\n" +
-								"Location: " + event.location + "\n" +
-								"Time: " + event.start + "\n" +
-								"Grutor: " + event.grutor
-
-								)}
+							onSelectEvent={event => this.fillSelectedShift(event)
+							}
 
 							events={this.state.current_user ?
 								this.eventList(this.state.calendarGrutorEvents).concat(this.eventListGrutee(this.state.calendarGruteeEvents))
