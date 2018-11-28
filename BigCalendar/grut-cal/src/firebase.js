@@ -1,3 +1,9 @@
+/*
+ *  Author: Tse Yang Lim, Dave Makhervaks
+ *  Desc: Firebase settings and configuration setup here, including limiting
+ *  login to g.hmc domain.
+ */
+
 import firebase from 'firebase'
 
 var config = {

@@ -1,3 +1,8 @@
+/*
+ * Author: Sascha Reynolds, Matt Kanovsky, Dave Makhervaks, Tse Yang Lim, Julius Lauw
+ * Desc: Main App.js Component that Users interact with
+ */
+
 import React, { Component } from 'react';
 import BigCalendar from 'react-big-calendar';
 import moment from 'moment';
@@ -41,7 +46,7 @@ class App extends Component {
 			calendarGruteeEvents: [], // events display format of grutee events
 			calendarGrutorEvents: [] // events display format of grutor events
 		};
-		// logic for using offline json document for course listings
+		// logic for using local json data in courses.js for course listings
 		var HMcourses = ScrapedCourses["courses"];
 		var seenCourses = new Set()
 		for(let course in HMcourses){
@@ -84,7 +89,6 @@ class App extends Component {
 		})
 		return gruteeClasses;
 	};
-
 
 	toggleGrutorClass(event) {
 		const title = event.target.value;
@@ -138,8 +142,8 @@ class App extends Component {
 		return newEvents;
 	}
 
+	// function to construct Firebase course entry
 	constructFirebaseEntry(json, grutor){
-		// function to construct Firebase course entry
 		var name = json["course"].substr(0, json["course"].indexOf(" "));
 		var course = {};
 		if(grutor){
@@ -381,16 +385,7 @@ class App extends Component {
 			day = Object.values(Object.values(classInfo[i])[0])[0];
 
 
-
-
-
-
-			///check events that occur at the same time here - new for loop 
-
-
-
-
-
+			///check events that occur at the same time here - new for loop
 
 
 			// Generate list of recurring events based on the input day
@@ -486,14 +481,14 @@ class App extends Component {
 		}
 	}
 
-  	//logout function to be passed to navbar component
-  	logout(){
-    	auth.signOut().then(() => {
-        	this.setState({
-            	current_user: null
-        	});
-    	});
-  	}
+	//logout function to be passed to navbar component
+	logout(){
+  	auth.signOut().then(() => {
+      	this.setState({
+          	current_user: null
+      	});
+  	});
+	}
 
 	displayData() {
 		let userData = this.state.testState.map((item) => {
@@ -626,7 +621,7 @@ class App extends Component {
 								"Location: " + event.location + "\n" +
 								"Time: " + event.start + "\n" +
 								"Grutor: " + event.grutor
-								
+
 								)}
 
 							events={this.state.current_user ?

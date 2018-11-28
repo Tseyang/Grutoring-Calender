@@ -1,3 +1,10 @@
+/*
+ * Author: Tse Yang Lim
+ *
+ * Desc: This is a wrapper component for the dropdown menu that displays courses scraped from Portal
+ * when selecting a course to add to the User's list of classes.
+ */
+
 import React from 'react';
 
 class CourseMenu extends React.Component{

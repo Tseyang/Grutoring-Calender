@@ -1,3 +1,9 @@
+/*
+ * Author: Tse Yang Lim
+ * Desc: This is the Component for the navbar at the top of the app which
+ * primarily handles login/logout functionality
+ */
+
 import React, { Component } from 'react';
 import './css/navbar.css'
 
@@ -14,6 +20,9 @@ class Navbar extends Component{
         this.logout = this.logout.bind(this);
     }
 
+    /*
+     * Whenever a login or logout is done, set the state accordingly
+     */
     componentDidMount(){
         auth.onAuthStateChanged((user) => {
             if(user){
@@ -24,6 +33,10 @@ class Navbar extends Component{
         });
     }
 
+    /*
+     * Use logout function that is passed in on construction of this Component
+     * to access the current_user variable in the state of the parent component App.js
+     */
     logout(){
         this.props.logout();
         this.setState({
@@ -31,6 +44,9 @@ class Navbar extends Component{
         });
     }
 
+    /*
+     * Use G-Suite login API with a popup for logging in, login restricted to g.hmc
+     */
     login(){
         auth.signInWithPopup(provider).then((result) => {
             const user = result.user;

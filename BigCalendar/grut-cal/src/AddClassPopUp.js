@@ -1,3 +1,7 @@
+/*
+ * Author: Tse Yang Lim
+ * Desc: Component of popup form for adding a class
+ */
 
 import React, { Component } from 'react';
 import CourseMenu from './CourseMenu';
@@ -5,7 +9,8 @@ import CourseMenu from './CourseMenu';
 class ClassPopUp extends Component {
     constructor(props){
         super(props);
-        //expect functions addCourse (callback for form contents) and closePopup
+        //expect functions addCourse (callback for form contents) and closePopup from parent App.js
+        //courses are courses that were scraped and processed in parent App.js
         this.state = {
             grutor: false,
             courses: props.courses,
@@ -21,7 +26,6 @@ class ClassPopUp extends Component {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.toggleGrutor = this.toggleGrutor.bind(this);
         this.toggleStudent = this.toggleStudent.bind(this);
-        this.toggleRepeat = this.toggleRepeat.bind(this);
     }
 
     toggleGrutor(){
@@ -36,16 +40,10 @@ class ClassPopUp extends Component {
         });
     }
 
-    toggleRepeat(){
-        this.setState({
-            repeat: !this.state.repeat
-        });
-    }
-
+    /* function to handle submission of the form */
     handleSubmit(event){
         event.preventDefault();
         const data = new FormData(event.target);
-
         // access FormData fields with 'data.get(fieldName)'
         var newState = {};
         if(data.get("role") === "grutor"){
