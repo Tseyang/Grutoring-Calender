@@ -767,7 +767,26 @@ class App extends Component {
         </Row>
 			<div className = "body" >
           		<div className = "classSidebar" >
-				  		<Typography variant="h4">
+				  	{this.state.current_user ?
+						<div name = "addClassButton">
+							<Button 
+								variant="contained" 
+								color="primary"
+								onClick={this.togglePopup}
+								classes={
+									{root: 'addClass-state-root'} // class name, e.g. `classes-nesting-root-x`
+								}>
+								Add a class
+							</Button>
+						</div>
+						:
+						<div>
+							<p>You need to login to add classes.</p>
+						</div>
+						}
+						<div className = "classList">
+				  		<Typography variant="h4" >
+						Class List
 						</Typography>
 						<div id="selected-shift">
 							<h1>Selected Shift</h1>
@@ -795,8 +814,11 @@ class App extends Component {
 						}
 						</FormGroup>
 						</Grow>
-
-						<h1>Grutoring List</h1>
+						</div>
+						<div className = "grutoringList">
+						<Typography variant="h4" >
+						Grutoring List
+						</Typography>
 						<FormGroup column>
 						{this.state.current_user ?
 
@@ -806,20 +828,7 @@ class App extends Component {
 							null
 						}
 						</FormGroup>
-						{this.state.current_user ?
-							<div name = "addClassButton">
-								<Button
-									variant="contained"
-									color="primary"
-									onClick={this.togglePopup}>
-									Add a class
-								</Button>
-							</div>
-							:
-							<div>
-								<p>You need to login to add classes.</p>
-							</div>
-						}
+						</div>
 					</div>
 					<div className = "calendar">
 						<BigCalendar
