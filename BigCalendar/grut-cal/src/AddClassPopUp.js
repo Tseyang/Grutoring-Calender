@@ -21,7 +21,7 @@ class ClassPopUp extends Component {
                 day: null,
                 startTime: null,
                 endTime: null,
-            }
+            },
         }
         this.handleSubmit = this.handleSubmit.bind(this);
         this.toggleGrutor = this.toggleGrutor.bind(this);
@@ -44,6 +44,33 @@ class ClassPopUp extends Component {
     handleSubmit(event){
         event.preventDefault();
         const data = new FormData(event.target);
+
+    // helper function to display invalid input fields on addCourse form submission
+    showInvalidInputError(validCourse, validTime){
+      let error = "Following fields were invalid:";
+      document.getElementById("error-header").textContent = error;
+      if(!validCourse){
+        document.getElementById("course-error").textContent = "Course Code and Name";
+      }
+      if(!validTime){
+        document.getElementById("time-error").textContent = "Start and End times are invalid"
+      }
+    }
+
+    // helper function to validate time inputs for addCourse form submission
+    validateTime(startTime, endTime){
+      if(endTime > startTime){
+        return true;
+      }else{
+        return false;        
+      }
+    }
+
+    handleSubmit(event){
+        event.preventDefault();
+        const data = new FormData(event.target);
+        let validCourse = false;
+        let validTime = false;
         // access FormData fields with 'data.get(fieldName)'
         var newState = {};
         if(data.get("role") === "grutor"){
@@ -53,13 +80,37 @@ class ClassPopUp extends Component {
                 startTime: data.get("startTime"),
                 endTime: data.get("endTime")
             }
+            if(this.validateTime(newState["startTime"],newState["endTime"])){
+              validTime = true;
+            }
+        }else{
+          // set time to true for student
+          validTime = true;
         }
         newState["course"] = data.get("course");
         newState["role"] = data.get("role");
-        this.setState({formValues: newState}, function() {
-            this.props.addCourse(this.state.formValues);
-            this.props.closePopup();
+
+        let validCourses = new Set();
+        this.state.courses.map((course) => {
+            var course_code = course["course_code"].substr(0, course["course_code"].lastIndexOf(" ")) + " - " +  course["course_name"];
+            validCourses.add(course_code);
         })
+
+        if(validCourses.has(newState["course"])){
+          validCourse = true;
+        }
+
+        if(validCourse && validTime){
+          document.getElementById("error-header").textContent = "";
+          document.getElementById("course-error").textContent = "";
+          document.getElementById("time-error").textContent = "";
+          this.setState({formValues: newState}, function() {
+              this.props.addCourse(this.state.formValues);
+              this.props.closePopup();
+          })
+        }else{
+          this.showInvalidInputError(validCourse, validTime);
+        }
     }
 
     render(){
@@ -67,6 +118,7 @@ class ClassPopUp extends Component {
             <div className="class-popup">
                 <div className="class-popup-inner">
                     <form onSubmit={this.handleSubmit}>
+                        <div id="error-container"><p id="error-header"></p><p id="course-error"></p><p id="time-error"></p></div>
                         <CourseMenu courses={this.state.courses} />
                         <input type="radio" name="role" value="student" onClick={this.toggleStudent} required></input> Student
                         <input type="radio" name="role" value="grutor" onClick={this.toggleGrutor} required></input> Grutor
