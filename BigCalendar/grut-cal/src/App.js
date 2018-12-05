@@ -34,8 +34,11 @@ import Zoom from '@material-ui/core/Zoom';
 import Collapse from '@material-ui/core/Collapse';
 import Slide from '@material-ui/core/Slide';
 import Grow from '@material-ui/core/Grow';
-
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
+import Fab from '@material-ui/core/Fab';
+import AddIcon from '@material-ui/icons/Remove';
+import Icon from '@material-ui/core/Icon';
 
 
 
@@ -74,6 +77,13 @@ const DAYS = {
 // 	},
 //   };
 
+const theme = createMuiTheme({
+	typography: {
+	  useNextVariants: true,
+	  suppressDeprecationWarnings: true
+	}
+  });
+
 class App extends Component {
 	constructor(props) {
 		const { classes } = props;
@@ -89,7 +99,9 @@ class App extends Component {
 			courses: [],
 			calendarGruteeEvents: [], // events display format of grutee events
 			calendarGrutorEvents: [], // events display format of grutor events
-			isLoaded: false
+			isLoaded: false,
+			classSelected: false,
+			currentSelectedClass: []
 		};
 		// logic for using local json data in courses.js for course listings
 		var HMcourses = ScrapedCourses["courses"];
@@ -120,6 +132,7 @@ class App extends Component {
 		this.getChecked = this.getChecked.bind(this);
 		this.testLoad = this.testLoad.bind(this);
 		this.fillSelectedShift = this.fillSelectedShift.bind(this);
+		this.toggleSelectedClass = this.toggleSelectedClass.bind(this);
 	}
 
 	mapEvents(classType){
@@ -159,10 +172,11 @@ class App extends Component {
 							:
 							() => this.removeCourse(enrolledClass.value,true)
 						}
+						color="secondary"
 						classes={{
 							root: 'classes-state-root', // class name, e.g. `classes-nesting-root-x`
 							}}>
-						Remove class
+						{(classType === this.state.classes) ? "Remove Class" : "Remove Shift"}
 					</Button>
 					</div>
 					</div>
@@ -749,15 +763,23 @@ class App extends Component {
 	}
 
 	fillSelectedShift(event){
-		document.getElementById("selected-shift-class").innerHTML = "Class:  " +  event.title;
-		document.getElementById("selected-shift-location").innerHTML = "Location: " + event.location;
-		document.getElementById("selected-shift-start").innerHTML = "Start: " + event.start;
-		document.getElementById("selected-shift-end").innerHTML = "End: " + event.end;
-		document.getElementById("selected-shift-grutors").innerHTML = "Grutor: " + event.grutor;
+		var classInfo = [];
+		classInfo.push(event.title);
+		classInfo.push(event.location);
+		classInfo.push(event.start);
+		classInfo.push(event.end);
+		classInfo.push(event.grutor);
+		this.setState({classSelected: true, currentSelectedClass: classInfo});
 	}
+
+	toggleSelectedClass(){
+		this.setState({classSelected: false})
+	}
+
 
 	render() {
     return (
+		<MuiThemeProvider theme={theme}>
       <div className = "wholeThing">
         <Row>
           <Navbar
@@ -767,59 +789,90 @@ class App extends Component {
         </Row>
 			<div className = "body" >
           		<div className = "classSidebar" >
-				  	{this.state.current_user ?
+					{(!this.state.current_user) ? 
+						<Typography variant="h5"> 
+					  		Login to see information
+						</Typography> 
+						: 
+						null}
+				  	<Slide direction="down" in={!(this.state.current_user == null)} mountOnEnter unmountOnExit timeout = {1500}>
 						<div name = "addClassButton">
 							<Button 
 								variant="contained" 
-								color="primary"
+								color = "primary"
 								onClick={this.togglePopup}
 								classes={
 									{root: 'addClass-state-root'} // class name, e.g. `classes-nesting-root-x`
 								}>
-								Add a class
+								Add a class or shift
 							</Button>
 						</div>
-						:
-						<div>
-							<p>You need to login to add classes.</p>
+					</Slide>
+						<div id="selected-shift" className = {this.state.classSelected ? "visible" : "invisible"}>
+							<Card
+								classes={
+									{root: 'ss-state-root'} // class name, e.g. `classes-nesting-root-x`
+								}>
+      							<CardContent>
+									  <Fab 	color="secondary" 
+											aria-label="Add" 
+											className="removeButton"
+											onClick={this.toggleSelectedClass}>
+        								<AddIcon />
+      								</Fab>
+								<Typography component="h2" variant="h4" >
+								Selected Shift
+								</Typography>
+								<div id="selected-shift-body">
+									<div id="selected-class-style-wrapper">
+										<span id="Description">Class: </span>{this.state.currentSelectedClass[0]}
+									</div>
+									<div id="selected-class-style-wrapper">
+										<span id="Description">Location: </span>{this.state.currentSelectedClass[1]}
+									</div> 
+									<div id="selected-class-style-wrapper">
+										<span id="Description">Start: </span>{String(this.state.currentSelectedClass[2])}
+									</div>
+									<div id="selected-class-style-wrapper">
+										<span id="Description">End: </span>{String(this.state.currentSelectedClass[3])}
+									</div>
+									<div id="selected-class-style-bottom">
+										<span id="Description">Grutor: </span>{this.state.currentSelectedClass[4]}
+									</div>
+								</div>
+								</CardContent>
+							</Card>
 						</div>
-						}
+						<div 	id = "sidebarLists" 
+								className = {this.state.classSelected ? "slideDown" : "default"}>
+						<Grow  in={!(this.state.current_user == null)} timeout = {1500}>
 						<div className = "classList">
-				  		<Typography variant="h4" >
+						<Typography 
+							variant="h4"
+							color = "textPrimary" 
+							classes={
+								{root: 'font-state-root'} // class name, e.g. `classes-nesting-root-x`
+							}>
 						Class List
 						</Typography>
-						<div id="selected-shift">
-							<h1>Selected Shift</h1>
-							<div id="selected-shift-body">
-								<p id="selected-shift-class"></p>
-								<p id="selected-shift-location"></p>
-								<p id="selected-shift-start"></p>
-								<p id="selected-shift-end"></p>
-								<p id="selected-shift-grutors"></p>
-							</div>
-						</div>
-						<h1>Class List</h1>
-						{!this.state.current_user ?
-							"Loading user classes"
-							:
-							null
-						}
-						<Grow  in={this.state.current_user} timeout = {1500}>
-						<FormGroup column>
-
+						<FormGroup>
 						{this.state.current_user ?
 							this.mapEvents(this.state.classes)
 							:
 							null
 						}
 						</FormGroup>
-						</Grow>
 						</div>
+						</Grow>
+						<Grow  in={!(this.state.current_user == null)} timeout = {1500}>
 						<div className = "grutoringList">
-						<Typography variant="h4" >
-						Grutoring List
+						<Typography variant="h4" 
+									classes={
+										{root: 'font-state-root'} // class name, e.g. `classes-nesting-root-x`
+									}>
+						Grutoring Shifts
 						</Typography>
-						<FormGroup column>
+						<FormGroup>
 						{this.state.current_user ?
 
 							this.mapEvents(this.state.grutorClasses)
@@ -829,10 +882,12 @@ class App extends Component {
 						}
 						</FormGroup>
 						</div>
+						</Grow>
+						</div>
 					</div>
 					<div className = "calendar">
 						<BigCalendar
-							selectable
+							
 							localizer={localizer}
 
 							onSelectEvent={event => this.fillSelectedShift(event)
@@ -862,6 +917,7 @@ class App extends Component {
 					}
 				</div>
 			</div>
+		</MuiThemeProvider>
   	);
 	}
 };

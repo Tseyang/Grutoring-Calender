@@ -26,23 +26,83 @@
     width: 325px;
     height:1000px;
     flex-direction: column;
-    background: rgb(138, 179, 255);
+    background: #c5cae9;
     margin-right:10px;
+    position: relative;
+}
+
+#selected-class-style-wrapper{
+    /* other styles goes here... */
+    vertical-align: top;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#selected-class-style-bottom{
+    margin-bottom: 0px;
+}
+
+.removeButton{
+    float: right;
+}
+
+#selected-shift{
+    position: absolute;
+    top: 100px;
+    width: 310px;
+    opacity: 1;
+    transition: 1s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+#selected-shift.invisible{
+    opacity: 0;
+}
+
+#Description{
+    font-weight: 500;
 }
 
 .grutoringList{
     background: #3f51b5;
-    padding-bottom: 10px;
+    padding-top: 10px;
     padding-left: 10px;
     padding-right:10px;
-    display: inline-block;
+    transition: 1s ease-in;
+    border-radius: 4px;
 }
 
 .classList{
     margin-top: 20px;
+    padding-top:10px;
     background: #3f51b5;
-    margin-bottom: 20px;
+    margin-bottom: 13px;
+    padding-bottom: 0px;
+    padding-left: 10px;
+    padding-right:10px;
+    border-radius: 4px;
 }
+
+#sidebarLists{
+    position: absolute;
+    top: 80px;
+    display: inline-block;
+    transform: translateY(0px);
+    transition: transform 1s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+/* want bothlists to transition down to 360px*/
+#sidebarLists.slideDown {
+    transform: translateY(280px)
+}
+
+#sidebarLists.default {
+    transform: translateY(0px)
+}
+
+#selected-shift-grutors{
+    margin-top:10px;
+    margin-bottom:0px;
+}
+
 
 .calendar{
     margin-top: 45px;
@@ -59,6 +119,9 @@
 .classCards{
     margin-bottom: 10px;
     font-size: 16px;
+}
+.class-popup-inner{
+    border-radius: 4px;
 }
 
 .classLabel{
@@ -80,14 +143,23 @@ div.classCards .classes-state-root {
 }
 
 div.classCards .card-state-root {
-    background-color: yellow;
+    background-color: rgb(255, 255, 255);
     width: 325px;
     flex-direction: row;
+}
+
+#selected-shift .ss-state-root{
+    width: 345px;
+}
+
+#sidebarLists .font-state-root{
+    color: white;
+    margin-bottom: 10px;
 }
 
 
 Button.addClass-state-root {
     color: #fff;
-    background-color: #3f51b5;
-    width:325px;
+    /* background-color: #3f51b5; */
+    width:345px;
 }
