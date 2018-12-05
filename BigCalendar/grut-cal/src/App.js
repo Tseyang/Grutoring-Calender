@@ -31,6 +31,16 @@ const START_DATE_FALL = "09/01/2018";
 const END_DATE_FALL = "12/20/2018";
 const NUM_RECCURING_EVENTS = 16;
 
+const DAYS = {
+	"Monday": 0,
+	"Tuesday": 1,
+	"Wednesday": 2,
+	"Thursday": 3,
+	"Friday": 4,
+	"Saturday": 5,
+	"Sunday": 6
+}
+
 class App extends Component {
 	constructor(props) {
 		super(props);
@@ -346,7 +356,61 @@ class App extends Component {
 		});
 	}
 
-	parseGruteeEventsList(classInfo) {
+
+	// helper function for sorting events
+	compareEvents(a,b) {
+		if (DAYS[a.day] < DAYS[b.day]){
+			  return -1;
+		  }
+		if (DAYS[a.day] > DAYS[b.day]){
+		  return 1;
+		  }
+		if (a.startTime < b.startTime){
+			  return -1;
+		  }
+		  if (a.startTime > b.startTime){
+			  return 1;
+		  }
+		  return 0;
+	  }
+  
+	  // merging of overlapping shifts for a given classTitle
+	  mergeFunction(classTitle, tempEventsBeforeRecur){
+		  let mergedShifts = [];
+		  let allShifts = tempEventsBeforeRecur[classTitle].sort(this.compareEvents);
+  
+		  // take advantage of sorted events
+		  for(var i = 0; i < allShifts.length; i++){
+			  let currLastShift = mergedShifts[mergedShifts.length-1];
+			  if(mergedShifts.length === 0){
+				  mergedShifts.push(allShifts[i]);
+			  }else if(DAYS[currLastShift.day] === DAYS[allShifts[i].day] && currLastShift.location === allShifts[i].location){
+				  // days and location are same, check for overlap
+  
+  
+  
+				  //changed to greater than OR equal to!!
+  
+  
+  
+				  if(currLastShift.endTime > allShifts[i].startTime){
+					  currLastShift.grutor = currLastShift.grutor + ", " + allShifts[i].grutor + " (" + allShifts[i].startTime + "-" + allShifts[i].endTime + ")";
+					  if(currLastShift.endTime < allShifts[i].endTime){
+						  currLastShift.endTime = allShifts[i].endTime;
+					  }
+				  }else{
+					  // current shift being examined starts later than the last ending shift seen
+					  mergedShifts.push(allShifts[i]);
+				  }
+			  }else{
+				  mergedShifts.push(allShifts[i]);
+			  }
+		  }
+		  return mergedShifts;
+	  }
+
+
+	  parseGruteeEventsList(classInfo) {
 		// Initialize variable that events object uses
 		var title = "";
 		var start = "";
@@ -362,9 +426,10 @@ class App extends Component {
 		var endDate = "";
 		var endTime = "";
 		var dateTimeStringEnd = "";
+		var tempEventsBeforeRecur = {};
 		var tempEventsList = [];
 
-		// Iterate through every {} object in classInfo
+
 		for(var i = 0; i < classInfo.length; i++) {
 
 			// parse title from grutorClasses list
@@ -384,10 +449,36 @@ class App extends Component {
 			//parse day of grutee event from classInfo list
 			day = Object.values(Object.values(classInfo[i])[0])[0];
 
+			// Update the start and end fields of the event
 
-			///check events that occur at the same time here - new for loop
 
+			isChecked = false;
 
+			var obj = {
+				title,
+				startTime,
+				endTime,
+				day,
+				isChecked,
+				location,
+				grutor,
+			}
+
+			// if class is not seen before
+			if(tempEventsBeforeRecur[title]){
+				tempEventsBeforeRecur[title].push(obj);
+			}else{
+				tempEventsBeforeRecur[title] = [obj];
+			}
+		}
+
+		let compareEvents = [];
+		for(var classTitle in tempEventsBeforeRecur){
+			compareEvents = compareEvents.concat(this.mergeFunction(classTitle, tempEventsBeforeRecur));
+		}
+
+		for(i = 0; i < compareEvents.length; i++) {
+			day = compareEvents[i].day;
 			// Generate list of recurring events based on the input day
 			var recur = moment(START_DATE_FALL).recur(END_DATE_FALL).every(day).daysOfWeek();
 			var listRecurringDates = recur.next(NUM_RECCURING_EVENTS);
@@ -398,16 +489,21 @@ class App extends Component {
 				// extract the current event date (moment object)
 				var currentEventDate = listRecurringDates[j];
 				var currentDateString = currentEventDate.format('YYYY-MM-DD');
-				var dateTimeStringStart = currentDateString + " " + startTime;
-				var dateTimeStringEnd = currentDateString + " " + endTime;
+				var dateTimeStringStart = currentDateString + " " + compareEvents[i].startTime;
+				var dateTimeStringEnd = currentDateString + " " + compareEvents[i].endTime;
 
 				// Update the start and end fields of the event
 				start = new Date(moment(dateTimeStringStart, 'YYYY-MM-DD HH:mm'));
 				end = new Date(moment(dateTimeStringEnd, 'YYYY-MM-DD HH:mm'));
 
+				var title = compareEvents[i].title;
+				var isChecked = compareEvents[i].isChecked;
+				var location = compareEvents[i].location;
+				var grutor = compareEvents[i].grutor;
+
 				isChecked = false;
 
-				var obj = {
+				obj = {
 					title,
 					start,
 					end,
