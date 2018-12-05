@@ -295,7 +295,6 @@ class App extends Component {
 		var day = "";
 		var startTime = "";
 		var dateTimeStringStart = "";
-		var endDate = "";
 		var endTime = "";
 		var dateTimeStringEnd = "";
 		var tempEvents = [];
@@ -329,8 +328,8 @@ class App extends Component {
 				// extract the current event date (moment object)
 				var currentEventDate = listRecurringDates[j];
 				var currentDateString = currentEventDate.format('YYYY-MM-DD');
-				var dateTimeStringStart = currentDateString + " " + startTime;
-				var dateTimeStringEnd = currentDateString + " " + endTime;
+				dateTimeStringStart = currentDateString + " " + startTime;
+				dateTimeStringEnd = currentDateString + " " + endTime;
 
 				// Update the start and end fields of the event
 				start = new Date(moment(dateTimeStringStart, 'YYYY-MM-DD HH:mm'));
@@ -373,12 +372,12 @@ class App extends Component {
 		  }
 		  return 0;
 	  }
-  
+
 	  // merging of overlapping shifts for a given classTitle
 	  mergeFunction(classTitle, tempEventsBeforeRecur){
 		  let mergedShifts = [];
 		  let allShifts = tempEventsBeforeRecur[classTitle].sort(this.compareEvents);
-  
+
 		  // take advantage of sorted events
 		  for(var i = 0; i < allShifts.length; i++){
 			  let currLastShift = mergedShifts[mergedShifts.length-1];
@@ -386,13 +385,13 @@ class App extends Component {
 				  mergedShifts.push(allShifts[i]);
 			  }else if(DAYS[currLastShift.day] === DAYS[allShifts[i].day] && currLastShift.location === allShifts[i].location){
 				  // days and location are same, check for overlap
-  
-  
-  
+
+
+
 				  //changed to greater than OR equal to!!
-  
-  
-  
+
+
+
 				  if(currLastShift.endTime > allShifts[i].startTime){
 					  currLastShift.grutor = currLastShift.grutor + ", " + allShifts[i].grutor + " (" + allShifts[i].startTime + "-" + allShifts[i].endTime + ")";
 					  if(currLastShift.endTime < allShifts[i].endTime){
@@ -423,7 +422,6 @@ class App extends Component {
 		var day = "";
 		var startTime = "";
 		var dateTimeStringStart = "";
-		var endDate = "";
 		var endTime = "";
 		var dateTimeStringEnd = "";
 		var tempEventsBeforeRecur = {};
@@ -489,17 +487,17 @@ class App extends Component {
 				// extract the current event date (moment object)
 				var currentEventDate = listRecurringDates[j];
 				var currentDateString = currentEventDate.format('YYYY-MM-DD');
-				var dateTimeStringStart = currentDateString + " " + compareEvents[i].startTime;
-				var dateTimeStringEnd = currentDateString + " " + compareEvents[i].endTime;
+				dateTimeStringStart = currentDateString + " " + compareEvents[i].startTime;
+				dateTimeStringEnd = currentDateString + " " + compareEvents[i].endTime;
 
 				// Update the start and end fields of the event
 				start = new Date(moment(dateTimeStringStart, 'YYYY-MM-DD HH:mm'));
 				end = new Date(moment(dateTimeStringEnd, 'YYYY-MM-DD HH:mm'));
 
-				var title = compareEvents[i].title;
-				var isChecked = compareEvents[i].isChecked;
-				var location = compareEvents[i].location;
-				var grutor = compareEvents[i].grutor;
+				title = compareEvents[i].title;
+				isChecked = compareEvents[i].isChecked;
+				location = compareEvents[i].location;
+				grutor = compareEvents[i].grutor;
 
 				isChecked = false;
 
