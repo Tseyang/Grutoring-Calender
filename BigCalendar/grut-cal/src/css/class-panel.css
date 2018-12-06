@@ -9,10 +9,6 @@
     justify-content: space-between
 }
 
-.classCheckbox{
-
-}
-
 .classButton{
     display: flex;
     justify-content: center;
@@ -125,8 +121,8 @@
 }
 
 .classLabel{
-    font-size:18px;
-    margin-right: 30px; 
+    font-size:17px;
+    margin-right: 30px;
     font-weight: 400;
 }
 

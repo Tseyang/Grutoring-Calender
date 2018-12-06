@@ -62,7 +62,7 @@ class ClassPopUp extends Component {
       if(endTime > startTime){
         return true;
       }else{
-        return false;        
+        return false;
       }
     }
 

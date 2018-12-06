@@ -130,15 +130,15 @@ class App extends Component {
 		this.getGrutoringInfo = this.getGrutoringInfo.bind(this);
 		this.mapEvents = this.mapEvents.bind(this);
 		this.getChecked = this.getChecked.bind(this);
-		this.testLoad = this.testLoad.bind(this);
 		this.fillSelectedShift = this.fillSelectedShift.bind(this);
 		this.toggleSelectedClass = this.toggleSelectedClass.bind(this);
+		this.eventStyleGetter = this.eventStyleGetter.bind(this);
 	}
 
 	mapEvents(classType){
 		var gruteeClasses = classType.map((enrolledClass) => {
 			return(
-				<div className = "classCards">
+				<div key={enrolledClass.value} className = "classCards">
 				<Card
 					classes={
 						{root: 'card-state-root'} // class name, e.g. `classes-nesting-root-x`
@@ -361,11 +361,8 @@ class App extends Component {
 			}
 			// set state whenever snapshot changes
 			this.parseGruteeEventsList(grutorInfo);
-			console.log(grutorInfo);
 			this.setState({
 				classInfo: grutorInfo
-			},function(){
-				console.log(this.state.classInfo)
 			});
 		})
 	}
@@ -757,11 +754,6 @@ class App extends Component {
 		}
 	}
 
-	testLoad(){
-		this.state.isLoaded = false;
-		return "Loading in classes"
-	}
-
 	fillSelectedShift(event){
 		var classInfo = [];
 		classInfo.push(event.title);
@@ -776,6 +768,25 @@ class App extends Component {
 		this.setState({classSelected: false})
 	}
 
+	eventStyleGetter(event, start, end, isSelected) {
+		var backgroundColor;
+		if(event.grutor.includes(this.state.current_user.displayName)){
+			backgroundColor = "green";
+		}else{
+			backgroundColor = "blue";
+		}
+    var style = {
+        backgroundColor: backgroundColor,
+        borderRadius: '0px',
+        opacity: 0.8,
+        color: 'black',
+        border: '0px',
+        display: 'block'
+    };
+    return {
+        style: style
+    };
+	}
 
 	render() {
     return (
@@ -789,16 +800,16 @@ class App extends Component {
         </Row>
 			<div className = "body" >
           		<div className = "classSidebar" >
-					{(!this.state.current_user) ? 
-						<Typography variant="h5"> 
+					{(!this.state.current_user) ?
+						<Typography variant="h5">
 					  		Login to see information
-						</Typography> 
-						: 
+						</Typography>
+						:
 						null}
 				  	<Slide direction="down" in={!(this.state.current_user == null)} mountOnEnter unmountOnExit timeout = {1500}>
 						<div name = "addClassButton">
-							<Button 
-								variant="contained" 
+							<Button
+								variant="contained"
 								color = "primary"
 								onClick={this.togglePopup}
 								classes={
@@ -814,8 +825,8 @@ class App extends Component {
 									{root: 'ss-state-root'} // class name, e.g. `classes-nesting-root-x`
 								}>
       							<CardContent>
-									  <Fab 	color="secondary" 
-											aria-label="Add" 
+									  <Fab 	color="secondary"
+											aria-label="Add"
 											className="removeButton"
 											onClick={this.toggleSelectedClass}>
         								<AddIcon />
@@ -829,7 +840,7 @@ class App extends Component {
 									</div>
 									<div id="selected-class-style-wrapper">
 										<span id="Description">Location: </span>{this.state.currentSelectedClass[1]}
-									</div> 
+									</div>
 									<div id="selected-class-style-wrapper">
 										<span id="Description">Start: </span>{String(this.state.currentSelectedClass[2])}
 									</div>
@@ -843,13 +854,13 @@ class App extends Component {
 								</CardContent>
 							</Card>
 						</div>
-						<div 	id = "sidebarLists" 
+						<div 	id = "sidebarLists"
 								className = {this.state.classSelected ? "slideDown" : "default"}>
 						<Grow  in={!(this.state.current_user == null)} timeout = {1500}>
 						<div className = "classList">
-						<Typography 
+						<Typography
 							variant="h4"
-							color = "textPrimary" 
+							color = "textPrimary"
 							classes={
 								{root: 'font-state-root'} // class name, e.g. `classes-nesting-root-x`
 							}>
@@ -866,7 +877,7 @@ class App extends Component {
 						</Grow>
 						<Grow  in={!(this.state.current_user == null)} timeout = {1500}>
 						<div className = "grutoringList">
-						<Typography variant="h4" 
+						<Typography variant="h4"
 									classes={
 										{root: 'font-state-root'} // class name, e.g. `classes-nesting-root-x`
 									}>
@@ -887,12 +898,12 @@ class App extends Component {
 					</div>
 					<div className = "calendar">
 						<BigCalendar
-							
+
 							localizer={localizer}
 
 							onSelectEvent={event => this.fillSelectedShift(event)
 							}
-
+							eventPropGetter = {this.eventStyleGetter}
 							events={this.state.current_user ?
 								this.eventList(this.state.calendarGrutorEvents).concat(this.eventListGrutee(this.state.calendarGruteeEvents))
 								:
