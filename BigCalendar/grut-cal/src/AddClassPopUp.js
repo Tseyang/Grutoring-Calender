@@ -243,6 +243,9 @@ class ClassPopUp extends Component {
                                         value={this.state.location}
                                         onChange={this.handleChangeLoc}
                                         margin="normal"
+                                        classes={
+                                            {root: 'classes-state-location'}
+                                          }
                                         /><br/>
                                     <FormControl className="formControlAddClass">
                                     <InputLabel htmlFor="age-simple">Day of the Week</InputLabel>

@@ -34,7 +34,7 @@
     margin-top: 45px;
     padding-top: 10px;
     padding-bottom: 20px;
-    padding-left: 0px;
+    padding-left: 20px;
     padding-right: 0px;
     width: 25vw;
     height:90vh;
@@ -132,8 +132,8 @@
 }
 
 .classLabel{
-    font-size:17px;
-    margin-right: 30px;
+    font-size:18px;
+    margin-right: 0px; 
     font-weight: 400;
 }
 
@@ -153,9 +153,14 @@ div#grutor-fields .classes-state-formcontrol {
     min-width:233px;
 }
 
+div#grutor-fields .classes-state-location {
+    min-width:233px;
+    margin-top: 0px;
+}
+
 div.classCards .card-state-root {
     background-color: rgb(255, 255, 255);
-    width: 350px;
+    width: 325px;
     flex-direction: row;
 }
 
@@ -181,5 +186,7 @@ Button.addClass-state-root {
     position: relative;
     top: -20px;
 }
+
+
 
 
