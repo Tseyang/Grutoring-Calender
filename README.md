@@ -15,4 +15,5 @@ Grutoring Calender seeks to consolidate the information of grutoring/Office Hour
 7. moment-recur
 8. @material-ui/core
 9. npm install --save muicss
+10. npm add moment
 
