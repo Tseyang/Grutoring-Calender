@@ -23,7 +23,6 @@ class CourseMenu extends React.Component{
                     type="text" 
                     list="courses" 
                     name="course" 
-                    required 
                     label="Enter a class"
                     floatingLabel={true}
                     />

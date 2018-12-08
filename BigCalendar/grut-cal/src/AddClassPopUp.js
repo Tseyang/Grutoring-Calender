@@ -10,6 +10,7 @@ import { MuiPickersUtilsProvider } from 'material-ui-pickers';
 import MomentUtils from '@date-io/moment';
 import moment from 'moment';
 import ClockIcon from '@material-ui/icons/Schedule';
+import CloseIcon from '@material-ui/icons/Close';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormHelperText from '@material-ui/core/FormHelperText';
@@ -22,6 +23,10 @@ import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormLabel from '@material-ui/core/FormLabel';
+import Button from '@material-ui/core/Button';
+import Paper from '@material-ui/core/Paper';
+import Icon from '@material-ui/core/Icon';
+import IconButton from '@material-ui/core/IconButton';
 
 
 
@@ -45,8 +50,9 @@ class ClassPopUp extends Component {
             selectedStart: null,
             day: '',
             location:'',
-            value: "Student"
-
+            value: "student",
+            validCourse: true,
+            validTime: true
         }
         this.handleSubmit = this.handleSubmit.bind(this);
         this.toggleGrutor = this.toggleGrutor.bind(this);
@@ -95,13 +101,6 @@ class ClassPopUp extends Component {
     // helper function to display invalid input fields on addCourse form submission
     showInvalidInputError(validCourse, validTime){
       let error = "Following fields were invalid:";
-      document.getElementById("error-header").textContent = error;
-      if(!validCourse){
-        document.getElementById("course-error").textContent = "Course Code and Name";
-      }
-      if(!validTime){
-        document.getElementById("time-error").textContent = "Start and End times are invalid"
-      }
     }
 
     convertTime12to24(time12h) {
@@ -136,6 +135,8 @@ class ClassPopUp extends Component {
         const data = new FormData(event.target);
         let validCourse = false;
         let validTime = false;
+        this.setState({validCourse: false});
+        this.setState({validTime: false});
         // access FormData fields with 'data.get(fieldName)'
         var newState = {};
         console.log(data.get("testicle"))
@@ -150,10 +151,12 @@ class ClassPopUp extends Component {
             }
             if(this.validateTime(newState["startTime"],newState["endTime"])){
               validTime = true;
+              this.setState({validTime: true});
             }
         }else{
           // set time to true for student
           validTime = true;
+          this.setState({validTime: true});
         }
         newState["course"] = data.get("course");
         newState["role"] = this.state.value;
@@ -166,12 +169,10 @@ class ClassPopUp extends Component {
 
         if(validCourses.has(newState["course"])){
           validCourse = true;
+          this.setState({validCourse: true});
         }
 
         if(validCourse && validTime){
-          document.getElementById("error-header").textContent = "";
-          document.getElementById("course-error").textContent = "";
-          document.getElementById("time-error").textContent = "";
           this.setState({formValues: newState}, function() {
               this.props.addCourse(this.state.formValues);
               this.props.closePopup();
@@ -187,19 +188,16 @@ class ClassPopUp extends Component {
         return(
             <div className="class-popup">
                 <div className="class-popup-inner">
+                    <Paper elevation={1} classes={{root: 'classes-state-paper'}}>
+                                          
                     <div className="formLayout" >
-                    <form onSubmit={this.handleSubmit} id="formVertical" autoComplete = {false}>
-                        <div id="error-container"><p id="error-header"></p><p id="course-error"></p><p id="time-error"></p></div>
+                    <div className="backButton">
+                    <IconButton  color="secondary" onClick={this.props.closePopup}><CloseIcon/></IconButton>
+                    </div>
+                    <form onSubmit={this.handleSubmit} id="formVertical">
+                        {/* <div id="error-container"><p id="error-header"></p><p id="course-error"></p><p id="time-error"></p></div> */}
                         <CourseMenu courses={this.state.courses} />
-                        {/* <input type="radio" name="role" value="student" onClick={this.toggleStudent}></input> <br/> */}
-                        {/* <Radio
-                            checked={this.state.grutor === false}
-                            onChange={this.toggleStudent}
-                            value="studentRadio"
-                            name="role"
-                            labelPlacement="start"
-                            label="Student"
-                        /> */}
+                        <div className = 'radio-groups'>
                         <FormControl component="fieldset" className="studentRadio">
                             <RadioGroup
                                 aria-label="student"
@@ -210,9 +208,10 @@ class ClassPopUp extends Component {
                             >
                                 <FormControlLabel
                                 value="student"
-                                control={<Radio color="primary" />}
+                                control={<Radio color="secondary" />}
                                 label="Student"
                                 labelPlacement="start"
+                                classes={{label: 'classes-state-radio'}}
                                 />
                             </RadioGroup>               
                         </FormControl>
@@ -226,17 +225,21 @@ class ClassPopUp extends Component {
                             >
                                 <FormControlLabel
                                 value="grutor"
-                                control={<Radio color="primary" />}
+                                control={<Radio color="secondary" />}
                                 label="Grutor"
                                 labelPlacement="start"
+                                classes={{label: 'classes-state-radio',
+                                            root: 'radio-root'}}
                                 />
                             </RadioGroup>               
-                        </FormControl> 
+                        </FormControl>
+                        </div> 
                         {/* <input type="radio" name="role" value="grutor" onClick={this.toggleGrutor} required></input> Grutor */}
                         <div>
                             {this.state.value == "grutor" ?
                                 <div id="grutor-fields">
                                     {/* Location: <input type="text" name="location" required></input><br/> */}
+                                    <div className = "firstLevelField">
                                     <TextField
                                         id="standard-name"
                                         label="Location"
@@ -246,17 +249,18 @@ class ClassPopUp extends Component {
                                         classes={
                                             {root: 'classes-state-location'}
                                           }
+                                        required
                                         /><br/>
                                     <FormControl className="formControlAddClass">
-                                    <InputLabel htmlFor="age-simple">Day of the Week</InputLabel>
+                                    <InputLabel htmlFor="week-simple">Day of the Week</InputLabel>
                                     <Select
                                         value={this.state.day}
                                         onChange={this.handleChangeDay}
                                         inputProps={{
-                                            name: 'age',
-                                            id: 'age-simple',
+                                            name: 'week',
+                                            id: 'week-simple',
                                         }}
-                                        name="age"
+                                        name="week"
                                         classes={
                                             {root: 'classes-state-formcontrol'}
                                           }
@@ -274,6 +278,7 @@ class ClassPopUp extends Component {
                                         <MenuItem value="Sunday">Sunday</MenuItem>
                                     </Select>
                                     </FormControl> <br/>
+                                    </div>
                                     {/* <select name="day" required>
                                         <option value="Monday">Monday</option>
                                         <option value="Tuesday">Tuesday</option>
@@ -283,7 +288,9 @@ class ClassPopUp extends Component {
                                         <option value="Saturday">Saturday</option>
                                         <option value="Sunday">Sunday</option>
                                     </select><br/>  */}
+                                    <div className = "SecondLevelField">
                                     <MuiPickersUtilsProvider utils={MomentUtils} moment ={moment}>
+                                        <div className = "firstTPicker">
                                         <TimePicker
                                             name = "startTime"
                                             keyboard
@@ -294,7 +301,11 @@ class ClassPopUp extends Component {
                                             onChange={this.handleChangeStart}
                                             disableOpenOnEnter
                                             keyboardIcon = {<ClockIcon />}
+                                            classes={
+                                                {root: 'classes-state-picker'}
+                                              }
                                             />  
+                                            </div>
                                     </MuiPickersUtilsProvider><br/>
                                     <MuiPickersUtilsProvider utils={MomentUtils} moment ={moment}>
                                         <TimePicker
@@ -307,16 +318,28 @@ class ClassPopUp extends Component {
                                             onChange={this.handleDateChange}
                                             disableOpenOnEnter
                                             keyboardIcon = {<ClockIcon />}
+                                            classes={
+                                                {root: 'classes-state-picker'}
+                                              }
                                             />            
                                     </MuiPickersUtilsProvider>
+                                    </div>
                                 </div>
                                 :
                                 null
                             }
                         </div>
-                        <input type = "submit" />
+                        <div className ="submitAndError">
+                            <Button classes={{root: 'submit-button'}} variant="contained" color="secondary" type = "submit" >Submit</Button>
+                                <div className = "errorMessage">
+                                {(this.state.validCourse & this.state.validTime)  ? null: <div className = "errorFont">The following errors were encountered: <br/></div>}
+                                {this.state.validCourse ? null: <div className = "errorFont">Invalid course</div>}
+                                {this.state.validTime ? null : <div className = "errorFont">Invalid time</div>}
+                                </div>
+                        </div>
                     </form>
-                    <button onClick={this.props.closePopup}>Back</button>
+                    </div>
+                    </Paper>
                 </div>
             </div>
         )

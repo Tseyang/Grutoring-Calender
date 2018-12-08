@@ -770,18 +770,18 @@ class App extends Component {
 
 	eventStyleGetter(event, start, end, isSelected) {
 		var backgroundColor;
+		var border;
 		if(event.grutor.includes(this.state.current_user.displayName)){
-			backgroundColor = "green";
+			backgroundColor = "rgb(136,14,79)";
+			border =  "rgb(136,14,79)";
+
 		}else{
-			backgroundColor = "blue";
+			backgroundColor = "rgb(26,35,126)";
+			border =  "rgb(26,35,126)";
 		}
     var style = {
-        backgroundColor: backgroundColor,
-        borderRadius: '0px',
-        opacity: 0.8,
-        color: 'black',
-        border: '0px',
-        display: 'block'
+		backgroundColor: backgroundColor,
+		border: border
     };
     return {
         style: style
@@ -917,15 +917,16 @@ class App extends Component {
 						/>
 					</div>
 				</div>
-				<div name = "classPopUp">
-          {this.state.showPopup ?
-            <ClassPopUp
-              courses = {this.state.scrapedCourses}
-              closePopup = {this.togglePopup}
-              addCourse = {(course) => {this.addCourse(course)}}/>
-            :
-            null
-					}
+				<div id = "classPopUp" className = {this.state.showPopup ? "show" : "noshow"}>
+					{this.state.showPopup ?
+						<ClassPopUp
+							courses = {this.state.scrapedCourses}
+							closePopup = {this.togglePopup}
+							addCourse = {(course) => {this.addCourse(course)}}/>
+						:
+						null
+								}
+				
 				</div>
 			</div>
 		</MuiThemeProvider>

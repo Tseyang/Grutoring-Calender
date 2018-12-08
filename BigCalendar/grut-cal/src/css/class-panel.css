@@ -20,9 +20,9 @@
     margin-left: 25vw;
     margin-right: 0px;
     margin-bottom: 0px;
-    padding-left: 25px;
+    padding-left: 35px;
     padding-right: 20px;
-    height: 100vh;
+    height: 94vh;
     width: 72vw;
     position: fixed;
     left: 0;
@@ -119,9 +119,6 @@
     margin-bottom:0px;
 }
 
-.classPopUp{
-    margin: 0 auto;
-}
 
 .classCards{
     margin-bottom: 10px;
@@ -150,12 +147,13 @@ div.classCards .classes-state-root {
 }
 
 div#grutor-fields .classes-state-formcontrol {
-    min-width:233px;
+    min-width:220px;
 }
 
 div#grutor-fields .classes-state-location {
-    min-width:233px;
+    min-width:220px;
     margin-top: 0px;
+    margin-right: 20px
 }
 
 div.classCards .card-state-root {
@@ -184,8 +182,85 @@ Button.addClass-state-root {
     padding: 20px;
     padding-top: 0px;
     position: relative;
-    top: -20px;
+    top: 0px;
+    z-index: 1;
 }
+
+div.formLayout .classes-state-radio{
+    font-size: inherit;  
+}
+
+.firstLevelField{
+    display: flex;
+    flex-direction: row;
+}
+
+.SecondLevelField{
+    display: flex;
+    flex-direction: row;
+}
+
+.classes-state-picker{
+    width: 220px;
+    margin-right: 20px;
+}
+
+.firstTPicker{
+    margin-right: 20px;
+}
+
+.radio-groups{
+    position: relative;
+    left: -15px;
+}
+
+.submitAndError{
+    margin-top: 15px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.backButton{
+    position: absolute;
+    z-index: 2;
+    /* margin-top: 10px;
+    margin-right:10px; */
+    top:0px;
+    right: 0px;
+    padding-right: 10px;
+    padding-top: 10px;
+}
+
+.errorFont {
+    font-weight: 500;
+    color: #e53935;
+    font-size: 14px;
+}
+
+Button.submit-button{
+    margin-right: 15px;
+}
+
+
+#classPopUp{
+    margin: auto;
+    opacity: 0;
+    transition: 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+#classPopUp.show{
+    opacity: 1;
+}
+
+#classPopUp.noshow{
+    opacity: 0;
+}
+
+
+
+
+
 
 
 

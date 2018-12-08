@@ -16,6 +16,23 @@
   top: 25%;
   bottom: 25%;
   margin: auto;
+<<<<<<< HEAD
   background: white;
   z-index: 1
+=======
+  z-index: 1;
+  width: 500px;
+>>>>>>> Final UI changes
 }
+
+div.class-popup .classes-state-paper{
+  position: relative;
+  margin:auto;
+  width: 500px;
+  min-height: 200px;
+  position: relative;
+  padding-top: 25px;
+  z-index: 3;
+  
+}
+

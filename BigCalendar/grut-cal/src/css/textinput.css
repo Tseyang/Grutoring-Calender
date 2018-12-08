@@ -1,6 +1,10 @@
 /**
  * MUI Textfield Component
  */
+ input::-webkit-calendar-picker-indicator {
+    display: none;
+  }
+
 .mui-textfield {
   display: block;
   padding-top: 15px;
@@ -28,7 +32,7 @@
 
 .mui-textfield > input:focus ~ label,
 .mui-textfield > textarea:focus ~ label {
-  color: #2196F3;
+  color: #3949ab;
 }
 
 .mui-textfield--float-label > label {
@@ -96,7 +100,7 @@
   border: none;
   border-bottom: 1px solid rgba(0, 0, 0, 0.26);
   outline: none;
-  width: 100%;
+  width: 460px;
   padding: 0;
   -webkit-box-shadow: none;
   box-shadow: none;
@@ -109,8 +113,15 @@
 
 .mui-textfield > input:focus,
 .mui-textfield > textarea:focus {
-  border-color: #2196F3;
+  border-color:  #3949ab;
   border-width: 2px;
+}
+
+.mui-textfield > input:hover,
+.mui-textfield > textarea:hover {
+    transition: 100ms cubic-bezier(0.4, 0.0, 0.2, 1);
+    border-color: rgb(65, 65, 65);
+    border-width: 2px;
 }
 
 .mui-textfield > input:disabled, .mui-textfield > input:-moz-read-only,
