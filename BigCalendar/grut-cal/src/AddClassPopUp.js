@@ -139,9 +139,6 @@ class ClassPopUp extends Component {
         this.setState({validTime: false});
         // access FormData fields with 'data.get(fieldName)'
         var newState = {};
-        console.log(data.get("testicle"))
-        console.log(data.get("location"))
-        console.log(this.state.location)
         if(this.state.value == "grutor"){
             newState = {
                 location: this.state.location,

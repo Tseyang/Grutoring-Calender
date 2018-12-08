@@ -772,12 +772,12 @@ class App extends Component {
 		var backgroundColor;
 		var border;
 		if(event.grutor.includes(this.state.current_user.displayName)){
-			backgroundColor = "rgb(136,14,79)";
-			border =  "rgb(136,14,79)";
+			backgroundColor = "rgb(48,63,159)";
+			border =  "rgb(48,63,159)";
 
 		}else{
-			backgroundColor = "rgb(26,35,126)";
-			border =  "rgb(26,35,126)";
+			backgroundColor = "rgb(194,24,91)";
+			border =  "rgb(194,24,91)";
 		}
     var style = {
 		backgroundColor: backgroundColor,
