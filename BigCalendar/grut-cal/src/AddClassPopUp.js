@@ -248,7 +248,7 @@ class ClassPopUp extends Component {
                                           }
                                         required
                                         /><br/>
-                                    <FormControl className="formControlAddClass">
+                                    <FormControl className="formControlAddClass" required>
                                     <InputLabel htmlFor="week-simple">Day of the Week</InputLabel>
                                     <Select
                                         value={this.state.day}
