@@ -3,13 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-<<<<<<< HEAD
-    "@material-ui/core": "^3.6.1",
-    "@material-ui/icons": "^3.0.1",
-    "ajv": "^6.5.4",
-    "firebase": "^5.5.5",
-    "material-ui": "^1.0.0-beta.47",
-=======
     "@babel/runtime": "^7.2.0",
     "@date-io/moment": "0.0.2",
     "@material-ui/core": "^3.6.1",
@@ -21,7 +14,6 @@
     "material-ui": "^1.0.0-beta.47",
     "material-ui-pickers": "^2.0.4",
     "material-ui-superselectfield": "^1.9.8",
->>>>>>> add class improvements
     "moment": "^2.22.2",
     "moment-recur": "^1.0.7",
     "muicss": "^0.9.41",

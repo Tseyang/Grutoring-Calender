@@ -69,12 +69,9 @@ class ClassPopUp extends Component {
         this.setState({
             grutor: false
         });
-    }
+    };
 
     /* function to handle submission of the form */
-    handleSubmit(event){
-        event.preventDefault();
-        const data = new FormData(event.target);
 
     handleDateChange = date => {
         this.setState({ selectedDate: date });
@@ -96,12 +93,9 @@ class ClassPopUp extends Component {
     
     handleChangeRadio = event => {
         this.setState({ value: event.target.value });
-      };
+    }
 
     // helper function to display invalid input fields on addCourse form submission
-    showInvalidInputError(validCourse, validTime){
-      let error = "Following fields were invalid:";
-    }
 
     convertTime12to24(time12h) {
         const [time, modifier] = time12h.split(' ');
