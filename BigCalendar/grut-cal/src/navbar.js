@@ -58,21 +58,21 @@ class Navbar extends Component{
 
     render(){
         return(
-            <div className="navbar navbar__extended">
-                <div className="container">
-                    {this.state.current_user ?
-                        <div className="navbar__inner">
-                            {this.state.current_user.displayName}
-                            <a className="navbar__logo" onClick={this.logout}>Log Out</a>
-                        </div>
-                        :
-                        <div className="navbar__inner">
-                            You are not logged in.
-                            <a className="navbar__logo" onClick={this.login}>Log In</a>
-                        </div>
-                    }
-                </div>
+          <div className="container">
+            <div className="navbar">
+              {this.state.current_user ?
+                  <div className="navbar__inner">
+                      {this.state.current_user.displayName}
+                      <a className="navbar__logo" onClick={this.logout}>Log Out</a>
+                  </div>
+                  :
+                  <div className="navbar__inner">
+                      You are not logged in.
+                      <a className="navbar__logo" onClick={this.login}>Log In</a>
+                  </div>
+              }
             </div>
+          </div>
         );
     }
 }

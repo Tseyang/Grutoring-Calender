@@ -3,23 +3,265 @@
     flex-direction: row;
 }
 
+.test{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between
+}
 
-.classSidebar{
-    margin-top: 35px;
-    margin-left: 30px;
-    flex-direction: column;
-    flex-grow: 1;
+.classButton{
+    display: flex;
+    justify-content: center;
+    flex-direction:column;
 }
 
 .calendar{
     margin-top: 45px;
-    float:right;
-    margin-left: auto;
-    margin-right: 20px;
-    flex-grow: 1;
-    height: 800px;
+    margin-left: 25vw;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    padding-left: 35px;
+    padding-right: 20px;
+    height: 94vh;
+    width: 72vw;
+    position: fixed;
+    left: 0;
+    overflow-y: scroll;
 }
 
-.classPopUp{
-    margin: 0 auto;
+
+.classSidebar{
+    margin-top: 45px;
+    padding-top: 10px;
+    padding-bottom: 20px;
+    padding-left: 20px;
+    padding-right: 0px;
+    width: 25vw;
+    height:90vh;
+    background: #c5cae9;
+    position: fixed;
+    left: 0;
+    z-index: -1;
+    overflow-y: scroll;
 }
+
+
+#selected-class-style-wrapper{
+    /* other styles goes here... */
+    vertical-align: top;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#selected-class-style-bottom{
+    margin-bottom: 0px;
+}
+
+.removeButton{
+    float: right;
+}
+
+#selected-shift{
+    position: absolute;
+    top: 60px;
+    width: 310px;
+    opacity: 1;
+    transition: 1s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+#selected-shift.invisible{
+    opacity: 0;
+}
+
+#Description{
+    font-weight: 500;
+}
+
+.grutoringList{
+    background: #3f51b5;
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right:10px;
+    transition: 1s ease-in;
+    border-radius: 4px;
+}
+
+.classList{
+    margin-top: 20px;
+    padding-top:10px;
+    background: #3f51b5;
+    margin-bottom: 13px;
+    padding-bottom: 0px;
+    padding-left: 10px;
+    padding-right:10px;
+    border-radius: 4px;
+}
+
+#sidebarLists{
+    position: absolute;
+    top: 40px;
+    display: inline-block;
+    transform: translateY(0px);
+    transition: transform 1s cubic-bezier(0.4, 0.0, 0.2, 1);
+    padding-bottom: 20px;
+}
+/* want bothlists to transition down to 360px*/
+#sidebarLists.slideDown {
+    transform: translateY(280px)
+}
+
+#sidebarLists.default {
+    transform: translateY(0px)
+}
+
+#selected-shift-grutors{
+    margin-top:10px;
+    margin-bottom:0px;
+}
+
+
+.classCards{
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+.class-popup-inner{
+    border-radius: 4px;
+}
+
+.classLabel{
+    font-size:18px;
+    margin-right: 0px; 
+    font-weight: 400;
+}
+
+Button.classes-state-root{
+    min-height: 30px;
+    font-size: 0.8rem;
+}
+
+div.classCards .classes-state-root {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 15px;
+    padding-right:15px;
+}
+
+div#grutor-fields .classes-state-formcontrol {
+    min-width:220px;
+}
+
+div#grutor-fields .classes-state-location {
+    min-width:220px;
+    margin-top: 0px;
+    margin-right: 20px
+}
+
+div.classCards .card-state-root {
+    background-color: rgb(255, 255, 255);
+    width: 325px;
+    flex-direction: row;
+}
+
+#selected-shift .ss-state-root{
+    width: 345px;
+}
+
+#sidebarLists .font-state-root{
+    color: white;
+    margin-bottom: 10px;
+}
+
+
+Button.addClass-state-root {
+    color: #fff;
+    /* background-color: #3f51b5; */
+    width:345px;
+}
+
+#formVertical{
+    padding: 20px;
+    padding-top: 0px;
+    position: relative;
+    top: 0px;
+    z-index: 1;
+}
+
+div.formLayout .classes-state-radio{
+    font-size: inherit;  
+}
+
+.firstLevelField{
+    display: flex;
+    flex-direction: row;
+}
+
+.SecondLevelField{
+    display: flex;
+    flex-direction: row;
+}
+
+.classes-state-picker{
+    width: 220px;
+    margin-right: 20px;
+}
+
+.firstTPicker{
+    margin-right: 20px;
+}
+
+.radio-groups{
+    position: relative;
+    left: -15px;
+}
+
+.submitAndError{
+    margin-top: 15px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.backButton{
+    position: absolute;
+    z-index: 2;
+    /* margin-top: 10px;
+    margin-right:10px; */
+    top:0px;
+    right: 0px;
+    padding-right: 10px;
+    padding-top: 10px;
+}
+
+.errorFont {
+    font-weight: 500;
+    color: #e53935;
+    font-size: 14px;
+}
+
+Button.submit-button{
+    margin-right: 15px;
+}
+
+
+#classPopUp{
+    margin: auto;
+    opacity: 0;
+    transition: 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+#classPopUp.show{
+    opacity: 1;
+}
+
+#classPopUp.noshow{
+    opacity: 0;
+}
+
+
+
+
+
+
+
+
+

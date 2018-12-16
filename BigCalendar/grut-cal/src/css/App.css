@@ -16,5 +16,18 @@
   top: 25%;
   bottom: 25%;
   margin: auto;
-  background: white;
+  z-index: 1;
+  width: 500px;
 }
+
+div.class-popup .classes-state-paper{
+  position: relative;
+  margin:auto;
+  width: 500px;
+  min-height: 200px;
+  position: relative;
+  padding-top: 25px;
+  z-index: 3;
+  
+}
+

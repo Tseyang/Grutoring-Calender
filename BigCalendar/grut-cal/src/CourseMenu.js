@@ -6,6 +6,10 @@
  */
 
 import React from 'react';
+import './css/textinput.css';
+import TextField from '@material-ui/core/TextField';
+import Input from 'muicss/lib/react/input';
+
 
 class CourseMenu extends React.Component{
     constructor(props){
@@ -18,14 +22,22 @@ class CourseMenu extends React.Component{
     render(){
         return(
             <div>
-                <input list="courses" name="course" required/>
-                <datalist id="courses">
-                    {
-                        this.state.courses.map((course) => {
-                            var course_code = course["course_code"].substr(0, course["course_code"].lastIndexOf(" ")) + " - " +  course["course_name"];
-                            return (<option key={course_code} value={course_code}></option>);
-                        })
-                    }
+                <div class="mui-textfield">
+                <Input 
+                    type="text" 
+                    list="courses" 
+                    name="course" 
+                    label="Enter a class"
+                    floatingLabel={true}
+                    />
+                </div>
+                    <datalist id="courses">
+                        {
+                            this.state.courses.map((course) => {
+                                var course_code = course["course_code"].substr(0, course["course_code"].lastIndexOf(" ")) + " - " +  course["course_name"];
+                                return (<option key={course_code} value={course_code}></option>);
+                            })
+                        }
                 </datalist>
             </div>
         );
