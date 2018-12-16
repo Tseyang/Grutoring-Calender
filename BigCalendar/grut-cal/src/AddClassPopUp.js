@@ -168,8 +168,6 @@ class ClassPopUp extends Component {
               this.props.addCourse(this.state.formValues);
               this.props.closePopup();
           })
-        }else{
-          this.showInvalidInputError(validCourse, validTime);
         }
     }
     
